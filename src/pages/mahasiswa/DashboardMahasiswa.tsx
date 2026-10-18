@@ -1,8 +1,17 @@
+import { useEffect, useState } from 'react'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { useAuth } from '@/hooks/useAuth'
+import { kuesionerService } from '@/services/kuesioner.service'
 
 export function DashboardMahasiswa() {
   const { user } = useAuth()
+  const [hasFilled, setHasFilled] = useState(false)
+
+  useEffect(() => {
+    if (user?.id) {
+      kuesionerService.getStatus(user.id).then(setHasFilled)
+    }
+  }, [user])
 
   return (
     <DashboardLayout
@@ -22,9 +31,15 @@ export function DashboardMahasiswa() {
             Silakan isi kuesioner berdasarkan 5 kriteria: Durasi, Frekuensi, Ketergantungan,
             Gangguan Akademik, dan FoMO. Setiap kriteria memiliki 5 subkriteria (skala 1–5).
           </p>
-          <a href="/mahasiswa/kuesioner" className="ds-btn ds-btn-primary">
-            Isi Kuesioner Sekarang
-          </a>
+          {hasFilled ? (
+            <button className="ds-btn ds-btn-secondary" disabled>
+              Kuesioner Sudah Diisi
+            </button>
+          ) : (
+            <a href="/mahasiswa/kuesioner" className="ds-btn ds-btn-primary">
+              Isi Kuesioner Sekarang
+            </a>
+          )}
         </div>
       </div>
 
@@ -34,13 +49,21 @@ export function DashboardMahasiswa() {
             <h3 className="ds-card-title">Status Kuesioner</h3>
             <p className="ds-card-description">Riwayat pengisian Anda</p>
           </div>
-          <span className="ds-badge ds-badge-pending">Belum Mengisi</span>
+          <span className={`ds-badge ${hasFilled ? 'ds-badge-success' : 'ds-badge-pending'}`}>
+            {hasFilled ? 'Sudah Mengisi' : 'Belum Mengisi'}
+          </span>
         </div>
         <div className="ds-card-content">
           <div className="ds-empty">
-            <div className="ds-empty-icon">📝</div>
-            <p className="ds-empty-title">Belum ada kuesioner yang diisi</p>
-            <p className="ds-empty-desc">Klik tombol di atas untuk mulai mengisi kuesioner.</p>
+            <div className="ds-empty-icon">{hasFilled ? '✅' : '📝'}</div>
+            <p className="ds-empty-title">
+              {hasFilled ? 'Terima kasih telah mengisi kuesioner!' : 'Belum ada kuesioner yang diisi'}
+            </p>
+            <p className="ds-empty-desc">
+              {hasFilled
+                ? 'Jawaban Anda telah tersimpan ke dalam sistem untuk diproses.'
+                : 'Klik tombol di atas untuk mulai mengisi kuesioner.'}
+            </p>
           </div>
         </div>
       </div>
