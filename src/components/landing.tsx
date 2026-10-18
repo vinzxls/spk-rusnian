@@ -35,7 +35,7 @@ export function LandingPage() {
               Sistem Identifikasi
             </p>
             <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--color-ink-2)' }}>
-              Kecanduan Media Sosial — Unpatti
+              Kecanduan Media Sosial Unpatti
             </p>
           </div>
         </div>
@@ -135,8 +135,8 @@ export function LandingPage() {
                 Dua Role
               </p>
               <ul style={{ margin: '8px 0 0', paddingLeft: 0, listStyle: 'none', lineHeight: 1.8, fontSize: '0.875rem', color: 'var(--color-ink)' }}>
-                <li>Admin — kelola data & hitung</li>
-                <li>Mahasiswa — isi kuesioner</li>
+                <li>Admin: kelola data & hitung</li>
+                <li>Mahasiswa: isi kuesioner</li>
               </ul>
             </div>
           </div>
@@ -198,7 +198,7 @@ export function LandingPage() {
         }}
       >
         <span>Sistem Identifikasi Tingkat Kecanduan Media Sosial © 2026</span>
-        <span>Ilmu Komputer — Universitas Pattimura · AHP + VIKOR</span>
+        <span>Ilmu Komputer Universitas Pattimura · AHP + VIKOR</span>
       </footer>
     </div>
   )

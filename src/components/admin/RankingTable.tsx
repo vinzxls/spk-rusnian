@@ -49,7 +49,7 @@ export function RankingTable({
   showKriteriaValues = true,
   showSR = true,
   loading = false,
-  title = 'Ranking Mahasiswa — Hasil Identifikasi (VIKOR)',
+  title = 'Ranking Mahasiswa Hasil Identifikasi (VIKOR)',
   onCetakLaporan,
 }: RankingTableProps): JSX.Element {
   const [search, setSearch] = useState('');

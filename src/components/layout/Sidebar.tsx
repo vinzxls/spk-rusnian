@@ -183,7 +183,7 @@ export function Sidebar({ role, isOpen = false, onNavigate }: SidebarProps) {
           </div>
           <div>
             <p className="ds-sidebar-brand-title">Sistem Identifikasi</p>
-            <p className="ds-sidebar-brand-subtitle">Kecanduan Gadget — Unpatti</p>
+            <p className="ds-sidebar-brand-subtitle">Kecanduan Media Sosial Unpatti</p>
           </div>
         </div>
 

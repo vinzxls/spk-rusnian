@@ -43,7 +43,7 @@ export interface NavbarProps {
 
 export default function Navbar({
   title = 'Sistem Identifikasi',
-  subtitle = 'Kecanduan Gadget — Universitas Pattimura',
+  subtitle = 'Kecanduan Media Sosial Universitas Pattimura',
   user,
   onLogout,
   onToggleSidebar,

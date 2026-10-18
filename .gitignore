@@ -38,4 +38,6 @@ pnpm-debug.log*
 .omop/
 .codegraph/
 .opencode/
+cloned-system/
+
 

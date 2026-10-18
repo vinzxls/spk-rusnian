@@ -67,13 +67,13 @@ export function LoginPage({ onLogin }: LoginPageProps) {
             </div>
           </div>
           <p style={{ margin: '10px 0 0', opacity: 0.85, fontSize: 13 }}>
-            Ilmu Komputer — Universitas Pattimura • AHP + VIKOR
+            Ilmu Komputer Universitas Pattimura • AHP + VIKOR
           </p>
         </div>
         <div className="ds-card-content">
           <LoginForm onLogin={handleLogin} isLoading={isLoading} error={error} />
           <p className="ds-caption" style={{ marginTop: 14, textAlign: 'center' }}>
-            Demo — Admin: admin1 / demo • Mahasiswa: 202106070001 / demo
+            Demo Admin: admin1 / demo • Mahasiswa: 202106070001 / demo
           </p>
         </div>
       </div>
