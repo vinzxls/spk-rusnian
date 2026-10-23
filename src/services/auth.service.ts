@@ -6,8 +6,8 @@
 import type { User, Mahasiswa, AuthSession, LoginCredentials, LoginResponse, UserRole } from '../types';
 import { isNim, normalizeIdentifier, verifyPasswordConcept } from '../utils/auth-helper';
 
-/** Sesi aktif di memori — ganti persistensi real (localStorage/cookie) di produksi */
-const sessions: Map<string, AuthSession> = new Map();
+/** Sesi aktif di memori */
+let activeSession: AuthSession | undefined = undefined;
 
 /** Mock tabel `users` — di produksi: SELECT * FROM users WHERE ... */
 const userStore: User[] = [];
@@ -15,10 +15,6 @@ const userStore: User[] = [];
 /** Mock tabel `mahasiswa` — di produksi: SELECT * FROM mahasiswa WHERE ... */
 const mahasiswaStore: Mahasiswa[] = [];
 
-/**
- * Login: otentifikasi identifier & password, kembalikan LoginResponse.
- * Identifier digit → lookup mahasiswa.nim lalu user terkait; selain itu → users.username.
- */
 export async function login(credentials: LoginCredentials): Promise<LoginResponse> {
   const identifier = normalizeIdentifier(credentials.username);
   const { password } = credentials;
@@ -51,35 +47,30 @@ export async function login(credentials: LoginCredentials): Promise<LoginRespons
     return { success: false, error: { code: 'INVALID_CREDENTIALS', message: 'Password salah' } };
   }
 
-  const session: AuthSession = {
+  activeSession = {
     user,
     mahasiswa: user.role === 'mahasiswa' ? mahasiswa : undefined,
     access_token: crypto.randomUUID(),
     expires_at: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
   };
-  sessions.set(user.id, session);
 
-  return { success: true, session };
+  return { success: true, session: activeSession };
 }
 
-/** Hapus sesi aktif (logout). */
 export function logout(): void {
-  sessions.clear();
+  activeSession = undefined;
 }
 
-/** Ambil sesi pertama yang aktif — di produksi: lookup by stored token/userId. */
 export function getCurrentSession(): AuthSession | undefined {
-  return sessions.values().next().value;
+  return activeSession;
 }
 
-/** True bila ada sesi aktif. */
 export function isAuthenticated(): boolean {
-  return sessions.size > 0;
+  return activeSession !== undefined;
 }
 
-/** RBAC check: apakah sesi aktif memiliki role tertentu. */
 export function hasRole(role: UserRole): boolean {
-  return getCurrentSession()?.user?.role === role;
+  return activeSession?.user?.role === role;
 }
 
 function lookupMahasiswaByNim(nim: string): Mahasiswa | undefined {
@@ -98,11 +89,10 @@ function lookupUserByUsername(username: string): User | undefined {
   return userStore.find((u) => u.username === username);
 }
 
-/** Seed data demo: admin + 1 mahasiswa — panggil sekali saat app bootstrap. */
 export function initMockData(): void {
   userStore.length = 0;
   mahasiswaStore.length = 0;
-  sessions.clear();
+  activeSession = undefined;
 
   const now = new Date().toISOString();
   const demoHash = '$2a$10$N.z3HdLyZ5V8xG.IpxxZAu';
