@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { StatCard } from '@/components/ui/StatCard'
 import { Users, FileText, Trophy, AlertCircle } from 'lucide-react'
@@ -30,9 +31,9 @@ export function MahasiswaCRUD() {
         </div>
         <div className="ds-card-content">
           <p className="ds-body-sm">Tabel data mahasiswa akan ditampilkan di sini.</p>
-          <a href="/admin/mahasiswa/create" className="ds-btn ds-btn-primary ds-btn-sm">
+          <Link to="/admin/mahasiswa" className="ds-btn ds-btn-primary ds-btn-sm">
             Tambah Mahasiswa Baru
-          </a>
+          </Link>
         </div>
       </div>
     </div>

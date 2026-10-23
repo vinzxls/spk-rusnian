@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { StatCard } from '@/components/ui/StatCard'
 import { Users, FileText, Trophy, AlertCircle } from 'lucide-react'
@@ -39,9 +40,9 @@ export function DashboardAdmin() {
             </div>
           </div>
           <div className="ds-card-content ds-flex ds-flex-col ds-gap-2">
-            <a href="/admin/kriteria" className="ds-btn ds-btn-secondary ds-btn-block">Kelola Kriteria & Subkriteria</a>
-            <a href="/admin/mahasiswa" className="ds-btn ds-btn-secondary ds-btn-block">Data Mahasiswa</a>
-            <a href="/admin/ranking" className="ds-btn ds-btn-primary ds-btn-block">Lihat Ranking VIKOR</a>
+            <Link to="/admin/kriteria" className="ds-btn ds-btn-secondary ds-btn-block">Kelola Kriteria & Subkriteria</Link>
+            <Link to="/admin/mahasiswa" className="ds-btn ds-btn-secondary ds-btn-block">Data Mahasiswa</Link>
+            <Link to="/admin/ranking" className="ds-btn ds-btn-primary ds-btn-block">Lihat Ranking VIKOR</Link>
           </div>
         </div>
       </div>

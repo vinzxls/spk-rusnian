@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { DashboardLayout } from '@/components/layout/DashboardLayout'
 import { useAuth } from '@/hooks/useAuth'
 import { kuesionerService } from '@/services/kuesioner.service'
@@ -36,9 +37,9 @@ export function DashboardMahasiswa() {
               Kuesioner Sudah Diisi
             </button>
           ) : (
-            <a href="/mahasiswa/kuesioner" className="ds-btn ds-btn-primary">
+            <Link to="/mahasiswa/kuesioner" className="ds-btn ds-btn-primary">
               Isi Kuesioner Sekarang
-            </a>
+            </Link>
           )}
         </div>
       </div>
