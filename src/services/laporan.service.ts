@@ -5,7 +5,7 @@
  * Output: konsep HTML untuk ekspor (bisa dikonversi ke PDF di frontend)
  */
 
-import { HasilRanking, KategoriKecanduan, LaporanData, LaporanFilter } from '../types/hasil.types';
+import { HasilRanking, LaporanData, LaporanFilter } from '../types/hasil.types';
 
 export class LaporanValidationError extends Error {
   readonly code = 'LAPORAN_VALIDATION_ERROR';
@@ -127,6 +127,27 @@ export function generateLaporanHTML(data: LaporanData): string {
     )
     .join('');
 
+  const KRITERIA_NAMA: Record<string, string> = {
+    C1: 'Durasi',
+    C2: 'Frekuensi',
+    C3: 'Ketergantungan',
+    C4: 'Gangguan Akademik',
+    C5: 'FoMO',
+  };
+
+  const bobotRows = (['C1', 'C2', 'C3', 'C4', 'C5'] as const)
+    .map((k) => {
+      const nilai = data.bobotKriteria[k];
+      return `
+    <tr>
+      <td>${k}</td>
+      <td>${esc(KRITERIA_NAMA[k])}</td>
+      <td>${nilai.toFixed(6)}</td>
+      <td>${(nilai * 100).toFixed(2)}%</td>
+    </tr>`;
+    })
+    .join('');
+
   return `
 <!DOCTYPE html>
 <html lang="id">
@@ -140,11 +161,14 @@ export function generateLaporanHTML(data: LaporanData): string {
     th, td { border: 1px solid #333; padding: 8px; font-size: 12px; }
     th { background-color: #f2f2f2; }
     .ringkasan { margin-top: 20px; }
+    .bobot { width: auto; }
   </style>
 </head>
 <body>
   <h1>${esc(data.header.judul)}</h1>
   <h2>${esc(data.header.institusi)}</h2>
+  <p><strong>Fakultas:</strong> ${esc(data.header.fakultas || '-')}</p>
+  <p><strong>Program Studi:</strong> ${esc(data.header.programStudi || '-')}</p>
   <p><strong>Periode:</strong> ${esc(data.header.periode)}</p>
   <p><strong>Tanggal Cetak:</strong> ${esc(data.header.tanggalCetak)}</p>
   <p><strong>Dicetak Oleh:</strong> ${esc(data.header.dicetakOleh)}</p>
@@ -155,6 +179,22 @@ export function generateLaporanHTML(data: LaporanData): string {
     <p>Rendah: ${data.ringkasan.rendah} | Sedang: ${data.ringkasan.sedang} | Tinggi: ${data.ringkasan.tinggi} | Sangat Tinggi: ${data.ringkasan.sangatTinggi}</p>
   </div>
 
+  <h3>Bobot Kriteria (AHP)</h3>
+  <table class="bobot">
+    <thead>
+      <tr>
+        <th>Kode</th>
+        <th>Kriteria</th>
+        <th>Bobot</th>
+        <th>Persentase</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${bobotRows}
+    </tbody>
+  </table>
+
+  <h3>Tabel Ranking (VIKOR)</h3>
   <table>
     <thead>
       <tr>

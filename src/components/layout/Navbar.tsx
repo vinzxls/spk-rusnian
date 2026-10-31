@@ -48,11 +48,9 @@ export default function Navbar({
   onLogout,
   onToggleSidebar,
 }: NavbarProps) {
-  const [menuOpen, setMenuOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
 
   const closeAll = () => {
-    setMenuOpen(false);
     setUserMenuOpen(false);
   };
 

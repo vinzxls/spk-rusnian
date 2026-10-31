@@ -1,135 +1,333 @@
-import { useState } from 'react'
-import type { PairwiseComparison, CriteriaWeight, ConsistencyTest } from '../../types/ahp.types'
-import * as ahpService from '../../services/ahp.service'
+/**
+ * PairwiseMatrixForm — input perbandingan berpasangan AHP (C1–C5).
+ *
+ * 10 pasangan diisi dengan skala Saaty 1/9 … 9. Setelah dihitung, komponen
+ * menampilkan matriks lengkap, bobot prioritas, dan uji konsistensi, lalu
+ * menyimpan hasilnya lewat `ahp-store` agar dipakai halaman Ranking, Laporan,
+ * dan Rekap Kuesioner.
+ */
+import { useEffect, useMemo, useState } from 'react'
+import type { CriteriaWeight, PairwiseComparison, ScaleSaaty } from '../../types/ahp.types'
+import { CRITERIA_LIST } from '../../types/ahp.types'
+import { computeAHP } from '../../utils/ahp-calculator'
+import { DEFAULT_COMPARISONS, loadAhp, saveAhp, resetAhp } from '../../services/ahp-store'
 
 type PairKey = keyof PairwiseComparison
 
-const PAIRS: { key: PairKey; label: string }[] = [
-  { key: 'C1_C2', label: 'C1 Durasi vs C2 Frekuensi' },
-  { key: 'C1_C3', label: 'C1 Durasi vs C3 Ketergantungan' },
-  { key: 'C1_C4', label: 'C1 Durasi vs C4 Gangguan Akademik' },
-  { key: 'C1_C5', label: 'C1 Durasi vs C5 FoMO' },
-  { key: 'C2_C3', label: 'C2 Frekuensi vs C3 Ketergantungan' },
-  { key: 'C2_C4', label: 'C2 Frekuensi vs C4 Gangguan Akademik' },
-  { key: 'C2_C5', label: 'C2 Frekuensi vs C5 FoMO' },
-  { key: 'C3_C4', label: 'C3 Ketergantungan vs C4 Gangguan Akademik' },
-  { key: 'C3_C5', label: 'C3 Ketergantungan vs C5 FoMO' },
-  { key: 'C4_C5', label: 'C4 Gangguan Akademik vs C5 FoMO' },
+const PAIRS: { key: PairKey; a: string; b: string }[] = [
+  { key: 'C1_C2', a: 'C1', b: 'C2' },
+  { key: 'C1_C3', a: 'C1', b: 'C3' },
+  { key: 'C1_C4', a: 'C1', b: 'C4' },
+  { key: 'C1_C5', a: 'C1', b: 'C5' },
+  { key: 'C2_C3', a: 'C2', b: 'C3' },
+  { key: 'C2_C4', a: 'C2', b: 'C4' },
+  { key: 'C2_C5', a: 'C2', b: 'C5' },
+  { key: 'C3_C4', a: 'C3', b: 'C4' },
+  { key: 'C3_C5', a: 'C3', b: 'C5' },
+  { key: 'C4_C5', a: 'C4', b: 'C5' },
 ]
 
-const SAATY_OPTIONS: { value: number; label: string }[] = [
-  { value: 1 / 9, label: '1/9 Mutlak kurang penting' },
-  { value: 1 / 7, label: '1/7 Sangat kurang penting' },
-  { value: 1 / 5, label: '1/5 Kurang penting' },
-  { value: 1 / 3, label: '1/3 Sedikit kurang penting' },
-  { value: 1, label: '1 Sama penting' },
-  { value: 3, label: '3 Sedikit lebih penting' },
-  { value: 5, label: '5 Lebih penting' },
-  { value: 7, label: '7 Sangat lebih penting' },
-  { value: 9, label: '9 Mutlak lebih penting' },
+/** Skala Saaty lengkap (1/9 … 9) dengan label makna. */
+const OPSI_SAATY: { value: number; label: string }[] = [
+  { value: 1 / 9, label: '1/9 — mutlak kurang penting' },
+  { value: 1 / 8, label: '1/8 — antara mutlak dan sangat kurang' },
+  { value: 1 / 7, label: '1/7 — sangat kurang penting' },
+  { value: 1 / 6, label: '1/6 — antara sangat dan lebih kurang' },
+  { value: 1 / 5, label: '1/5 — lebih kurang penting' },
+  { value: 1 / 4, label: '1/4 — antara lebih dan sedikit kurang' },
+  { value: 1 / 3, label: '1/3 — sedikit kurang penting' },
+  { value: 1 / 2, label: '1/2 — antara sedikit kurang dan sama' },
+  { value: 1, label: '1 — sama penting' },
+  { value: 2, label: '2 — antara sama dan sedikit lebih' },
+  { value: 3, label: '3 — sedikit lebih penting' },
+  { value: 4, label: '4 — antara sedikit dan lebih penting' },
+  { value: 5, label: '5 — lebih penting' },
+  { value: 6, label: '6 — antara lebih dan sangat lebih' },
+  { value: 7, label: '7 — sangat lebih penting' },
+  { value: 8, label: '8 — antara sangat dan mutlak' },
+  { value: 9, label: '9 — mutlak lebih penting' },
 ]
 
-const DEFAULT_COMP: PairwiseComparison = {
-  C1_C2: 1, C1_C3: 1, C1_C4: 1, C1_C5: 1,
-  C2_C3: 1, C2_C4: 1, C2_C5: 1,
-  C3_C4: 1, C3_C5: 1, C4_C5: 1,
+const namaKriteria = (kode: string) =>
+  CRITERIA_LIST.find((c) => c.code === kode)?.name ?? kode
+
+interface Props {
+  /** Dipanggil setelah bobot disimpan, mis. untuk memuat ulang halaman induk. */
+  onSaved?: (weights: CriteriaWeight, konsisten: boolean) => void
 }
 
-export function PairwiseMatrixForm() {
-  const [comp, setComp] = useState<PairwiseComparison>(DEFAULT_COMP)
-  const [weights, setWeights] = useState<CriteriaWeight | null>(null)
-  const [consistency, setConsistency] = useState<ConsistencyTest | null>(null)
-  const [error, setError] = useState<string | null>(null)
+export function PairwiseMatrixForm({ onSaved }: Props) {
+  const [comp, setComp] = useState<PairwiseComparison>(DEFAULT_COMPARISONS)
+  const [tersimpan, setTersimpan] = useState<string | null>(null)
 
-  const handleCalculate = (e: React.FormEvent) => {
-    e.preventDefault()
-    setError(null)
-    try {
-      const result = ahpService.computeAHP(comp)
-      setWeights(result.weights)
-      setConsistency(result.consistency)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Perhitungan gagal')
-      setWeights(null)
-      setConsistency(null)
+  // Muat input yang pernah disimpan admin.
+  useEffect(() => {
+    const state = loadAhp()
+    if (state) {
+      setComp(state.comparisons)
+      setTersimpan(state.savedAt)
     }
+  }, [])
+
+  const hasil = useMemo(() => computeAHP(comp), [comp])
+  const { weights, consistency, pairwiseMatrix, normalizedMatrix } = hasil
+  const totalBobot = weights.C1 + weights.C2 + weights.C3 + weights.C4 + weights.C5
+
+  const ubah = (key: PairKey, value: number) => {
+    setComp((prev) => ({ ...prev, [key]: value as ScaleSaaty }))
   }
 
-  const handleReset = () => {
-    setComp(DEFAULT_COMP)
-    setWeights(null)
-    setConsistency(null)
-    setError(null)
+  const simpan = () => {
+    const state = saveAhp(comp)
+    setTersimpan(state.savedAt)
+    onSaved?.(state.weights, state.consistency.isConsistent)
   }
 
-  const handleChange = (key: PairKey, raw: string) => {
-    const v = Number(raw)
-    setComp((prev) => ({ ...prev, [key]: v as PairwiseComparison[PairKey] }))
+  const reset = () => {
+    if (!window.confirm('Kembalikan semua perbandingan ke nilai 1 (sama penting)?')) return
+    setComp(DEFAULT_COMPARISONS)
+    resetAhp()
+    setTersimpan(null)
   }
-
-  const isConsistent = consistency ? consistency.isConsistent : null
 
   return (
-    <section style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-      <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
-        <h2 style={{ fontSize: '1.2rem', fontWeight: 600 }}>Matriks Perbandingan Berpasangan AHP</h2>
-        {consistency && (
-          <span style={{ padding: '4px 10px', borderRadius: 999, fontSize: 12, fontWeight: 600, background: isConsistent ? '#dcfce7' : '#fee2e2', color: isConsistent ? '#166534' : '#991b1b' }}>
-            {isConsistent ? 'Konsisten (CR kurang dari 0.1)' : 'Tidak Konsisten (CR 0.1 atau lebih)'}
+    <div className="ds-flex ds-flex-col ds-gap-4">
+      <div className="ds-card">
+        <div className="ds-card-header" style={{ flexWrap: 'wrap' }}>
+          <div>
+            <h3 className="ds-card-title">Perbandingan Berpasangan</h3>
+            <p className="ds-card-description">
+              Bandingkan tiap pasangan kriteria. Nilai kiri menunjukkan kriteria A lebih penting
+              daripada kriteria B.
+            </p>
+          </div>
+          <span
+            className={`ds-badge ${consistency.isConsistent ? 'ds-badge-success' : 'ds-badge-danger'}`}
+            role="status"
+          >
+            {consistency.isConsistent ? 'Konsisten' : 'Tidak konsisten'} · CR{' '}
+            {consistency.CR.toFixed(4)}
           </span>
-        )}
-      </header>
-
-      <form onSubmit={handleCalculate} style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 16, maxWidth: 640 }}>
-        {PAIRS.map(({ key, label }) => (
-          <div key={key}>
-            <label style={{ fontSize: 13, fontWeight: 500, color: '#6b7280' }}>{label}</label>
-            <select
-              value={String(comp[key])}
-              onChange={(e) => handleChange(key, e.target.value)}
-              className="ds-select"
-              style={{ marginTop: 4 }}
-            >
-              {SAATY_OPTIONS.map((opt) => (
-                <option key={opt.value} value={String(opt.value)}>{opt.label}</option>
-              ))}
-            </select>
-          </div>
-        ))}
-        <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'flex-end', gap: 8, marginTop: 8 }}>
-          <button type="button" onClick={handleReset} className="ds-btn ds-btn-secondary">Reset</button>
-          <button type="submit" className="ds-btn ds-btn-primary">Hitung Bobot AHP</button>
         </div>
-      </form>
 
-      {weights && consistency && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16, padding: 16, border: '1px solid var(--border)', borderRadius: 8, background: '#f8fafc' }}>
-          <div>
-            <h3 style={{ fontSize: 13, fontWeight: 600, marginBottom: 8 }}>Bobot Prioritas</h3>
-            <div style={{ fontSize: 13, lineHeight: 1.8 }}>
-              <div>C1 Durasi: {weights.C1.toFixed(4)}</div>
-              <div>C2 Frekuensi: {weights.C2.toFixed(4)}</div>
-              <div>C3 Ketergantungan: {weights.C3.toFixed(4)}</div>
-              <div>C4 Gangguan Akademik: {weights.C4.toFixed(4)}</div>
-              <div>C5 FoMO: {weights.C5.toFixed(4)}</div>
-              <div style={{ marginTop: 6, color: '#6b7280' }}>Total: {((weights.C1 + weights.C2 + weights.C3 + weights.C4 + weights.C5) * 100).toFixed(1)}% (harus sekitar 100%)</div>
+        <div className="ds-card-content">
+          <div className="ds-grid ds-grid-2 ds-gap-4">
+            {PAIRS.map(({ key, a, b }) => (
+              <div key={key}>
+                <label className="ds-label" htmlFor={`pair-${key}`}>
+                  {a} {namaKriteria(a)} vs {b} {namaKriteria(b)}
+                </label>
+                <select
+                  id={`pair-${key}`}
+                  className="ds-select"
+                  value={String(comp[key])}
+                  onChange={(e) => ubah(key, Number(e.target.value))}
+                >
+                  {OPSI_SAATY.map((o) => (
+                    <option key={o.value} value={String(o.value)}>
+                      {o.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ))}
+          </div>
+
+          <div className="ds-flex ds-gap-2 ds-mt-6" style={{ flexWrap: 'wrap' }}>
+            <button type="button" className="ds-btn ds-btn-primary" onClick={simpan}>
+              Hitung &amp; Simpan Bobot
+            </button>
+            <button type="button" className="ds-btn ds-btn-secondary" onClick={reset}>
+              Reset ke Sama Penting
+            </button>
+            {tersimpan && (
+              <span className="ds-caption" style={{ alignSelf: 'center' }}>
+                Tersimpan: {new Date(tersimpan).toLocaleString('id-ID')}
+              </span>
+            )}
+          </div>
+
+          {!consistency.isConsistent && (
+            <div className="ds-alert ds-alert-warning ds-mt-4" role="alert">
+              <div>
+                <p className="ds-alert-title">CR {consistency.CR.toFixed(4)} ≥ 0,1</p>
+                <p className="ds-alert-body">
+                  Perbandingan belum konsisten. Perbaiki nilai pada pasangan yang paling berbeda
+                  agar CR di bawah 0,1. Bobot tetap bisa disimpan, tetapi hasilnya kurang dapat
+                  dipertanggungjawabkan.
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="ds-grid ds-grid-2 ds-gap-4">
+        <div className="ds-card">
+          <div className="ds-card-header">
+            <h3 className="ds-card-title">Bobot Prioritas</h3>
+          </div>
+          <div className="ds-card-content">
+            <div className="ds-table-wrapper">
+              <table className="ds-table">
+                <thead>
+                  <tr>
+                    <th>Kode</th>
+                    <th>Kriteria</th>
+                    <th style={{ textAlign: 'right' }}>Bobot</th>
+                    <th style={{ textAlign: 'right' }}>%</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {CRITERIA_LIST.map((c) => {
+                    const nilai = weights[c.code as 'C1' | 'C2' | 'C3' | 'C4' | 'C5']
+                    return (
+                      <tr key={c.code}>
+                        <td className="font-mono">{c.code}</td>
+                        <td>{c.name}</td>
+                        <td style={{ textAlign: 'right' }} className="font-mono">
+                          {nilai.toFixed(4)}
+                        </td>
+                        <td style={{ textAlign: 'right' }} className="font-mono">
+                          {(nilai * 100).toFixed(2)}%
+                        </td>
+                      </tr>
+                    )
+                  })}
+                  <tr>
+                    <td colSpan={2}>
+                      <strong>Total</strong>
+                    </td>
+                    <td style={{ textAlign: 'right' }} className="font-mono">
+                      <strong>{totalBobot.toFixed(4)}</strong>
+                    </td>
+                    <td style={{ textAlign: 'right' }} className="font-mono">
+                      <strong>100%</strong>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
-          <div>
-            <h3 style={{ fontSize: 13, fontWeight: 600, marginBottom: 8 }}>Uji Konsistensi</h3>
-            <div style={{ fontSize: 13, lineHeight: 1.8 }}>
-              <div>lambda max: {consistency.lambdaMax.toFixed(4)}</div>
-              <div>CI: {consistency.CI.toFixed(6)}</div>
-              <div>RI (n=5): {consistency.RI}</div>
-              <div>CR: {consistency.CR.toFixed(4)} {consistency.isConsistent ? 'OK' : 'Tidak OK'}</div>
-              <div>Konsisten: {consistency.isConsistent ? 'Ya' : 'Tidak'}</div>
-            </div>
+        </div>
+
+        <div className="ds-card">
+          <div className="ds-card-header">
+            <h3 className="ds-card-title">Uji Konsistensi</h3>
+          </div>
+          <div className="ds-card-content">
+            <table className="ds-table">
+              <tbody>
+                <tr>
+                  <td>λ max</td>
+                  <td style={{ textAlign: 'right' }} className="font-mono">
+                    {consistency.lambdaMax.toFixed(4)}
+                  </td>
+                </tr>
+                <tr>
+                  <td>CI = (λmax − n) / (n − 1)</td>
+                  <td style={{ textAlign: 'right' }} className="font-mono">
+                    {consistency.CI.toFixed(6)}
+                  </td>
+                </tr>
+                <tr>
+                  <td>RI (n = 5)</td>
+                  <td style={{ textAlign: 'right' }} className="font-mono">
+                    {consistency.RI.toFixed(2)}
+                  </td>
+                </tr>
+                <tr>
+                  <td>CR = CI / RI</td>
+                  <td style={{ textAlign: 'right' }} className="font-mono">
+                    {consistency.CR.toFixed(4)}
+                  </td>
+                </tr>
+                <tr>
+                  <td>Syarat konsisten</td>
+                  <td style={{ textAlign: 'right' }}>CR &lt; 0,1</td>
+                </tr>
+                <tr>
+                  <td>Status</td>
+                  <td style={{ textAlign: 'right' }}>
+                    <span
+                      className={`ds-badge ${
+                        consistency.isConsistent ? 'ds-badge-success' : 'ds-badge-danger'
+                      }`}
+                    >
+                      {consistency.isConsistent ? 'Konsisten' : 'Tidak konsisten'}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
-      )}
+      </div>
 
-      {error && <div style={{ padding: 12, borderRadius: 8, background: '#fef2f2', color: '#991b1b', fontSize: 13 }}>{error}</div>}
-    </section>
+      <div className="ds-card">
+        <div className="ds-card-header">
+          <h3 className="ds-card-title">Matriks Perbandingan (5×5)</h3>
+        </div>
+        <div className="ds-card-content">
+          <div className="ds-table-wrapper">
+            <table className="ds-table">
+              <thead>
+                <tr>
+                  <th>Kriteria</th>
+                  {CRITERIA_LIST.map((c) => (
+                    <th key={c.code} style={{ textAlign: 'right' }}>
+                      {c.code}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {pairwiseMatrix.map((row, i) => (
+                  <tr key={CRITERIA_LIST[i].code}>
+                    <td className="font-mono">{CRITERIA_LIST[i].code}</td>
+                    {row.map((v, j) => (
+                      <td key={j} style={{ textAlign: 'right' }} className="font-mono">
+                        {v < 1 ? `1/${Math.round(1 / v)}` : v.toFixed(2)}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <p className="ds-caption ds-mt-4">
+            Matriks ternormalisasi (setiap sel dibagi jumlah kolomnya):
+          </p>
+          <div className="ds-table-wrapper ds-mt-2">
+            <table className="ds-table">
+              <thead>
+                <tr>
+                  <th>Kriteria</th>
+                  {CRITERIA_LIST.map((c) => (
+                    <th key={c.code} style={{ textAlign: 'right' }}>
+                      {c.code}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {normalizedMatrix.map((row, i) => (
+                  <tr key={CRITERIA_LIST[i].code}>
+                    <td className="font-mono">{CRITERIA_LIST[i].code}</td>
+                    {row.map((v, j) => (
+                      <td key={j} style={{ textAlign: 'right' }} className="font-mono">
+                        {v.toFixed(4)}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
   )
 }
 

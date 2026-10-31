@@ -1,4 +1,4 @@
-import type { User, UserRole } from '../types'
+import type { UserRole } from '../types'
 
 export interface Mahasiswa {
   id: string
@@ -29,7 +29,7 @@ export interface CreateMahasiswaDto {
   role: 'mahasiswa'
 }
 
-export interface UpdateMahasiswaDto extends Partial<Omit<CreateMahasiswaDto, 'nim' | 'role'>> {}
+export type UpdateMahasiswaDto = Partial<Omit<CreateMahasiswaDto, 'nim' | 'role'>>
 
 export interface MahasiswaQueryParams {
   search?: string

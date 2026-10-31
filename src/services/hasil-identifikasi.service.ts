@@ -22,6 +22,7 @@ import {
 import {
   DEFAULT_KATEGORI_KETERANGAN,
   HasilRanking,
+  KategoriKeterangan,
   KuesionerJawaban,
   MahasiswaData,
   RankingEntry,
@@ -121,12 +122,12 @@ export function gabungAHPdanVIKOR(input: GabungAHPVIKORInput): HasilRanking {
     mahasiswaData: mahasiswaMap?.[r.alternativeId],
   }));
 
-  const keteranganKategori = DEFAULT_VIKORS_CONFIG.criteriaType ? undefined : undefined;
+  const keteranganKategori: KategoriKeterangan[] = DEFAULT_KATEGORI_KETERANGAN;
   return {
     bobotAHP,
     hasilVikor,
     ranking,
-    keteranganKategori: DEFAULT_KATEGORI_KETERANGAN,
+    keteranganKategori,
     computedAt: new Date().toISOString(),
   };
 }

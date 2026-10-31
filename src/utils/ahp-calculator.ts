@@ -22,7 +22,6 @@ import {
 
 /** Kunci bobot dalam urutan C1..C5 (dipakai untuk konversi objek ↔ array) */
 const WEIGHT_KEYS = ['C1', 'C2', 'C3', 'C4', 'C5'] as const;
-type WeightKey = (typeof WEIGHT_KEYS)[number];
 
 /**
  * Susun matriks perbandingan berpasangan penuh 5x5 dari input upper-triangle.

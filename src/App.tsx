@@ -9,6 +9,8 @@ import { KriteriaCRUD } from './pages/admin/KriteriaCRUD'
 import { HasilIdentifikasi } from './pages/admin/HasilIdentifikasi'
 import { RankingPage } from './pages/admin/RankingPage'
 import { LaporanPage } from './pages/admin/LaporanPage'
+import { AhpPage } from './pages/admin/AhpPage'
+import { RekapKuesionerPage } from './pages/admin/RekapKuesionerPage'
 import { KuesionerFormPage } from './pages/mahasiswa/KuesionerFormPage'
 
 const homeFor = (role: string) => (role === 'admin' ? '/admin/dashboard' : '/mahasiswa/dashboard')
@@ -42,6 +44,8 @@ export default function App() {
       <Route path="/admin/dashboard" element={<ProtectedRoute allowed={['admin']}><DashboardAdmin /></ProtectedRoute>} />
       <Route path="/admin/mahasiswa" element={<ProtectedRoute allowed={['admin']}><MahasiswaCRUD /></ProtectedRoute>} />
       <Route path="/admin/kriteria" element={<ProtectedRoute allowed={['admin']}><KriteriaCRUD /></ProtectedRoute>} />
+      <Route path="/admin/ahp" element={<ProtectedRoute allowed={['admin']}><AhpPage /></ProtectedRoute>} />
+      <Route path="/admin/kuesioner" element={<ProtectedRoute allowed={['admin']}><RekapKuesionerPage /></ProtectedRoute>} />
       <Route path="/admin/hasil-identifikasi" element={<ProtectedRoute allowed={['admin']}><HasilIdentifikasi /></ProtectedRoute>} />
       <Route path="/admin/ranking" element={<ProtectedRoute allowed={['admin']}><RankingPage /></ProtectedRoute>} />
       <Route path="/admin/laporan" element={<ProtectedRoute allowed={['admin']}><LaporanPage /></ProtectedRoute>} />

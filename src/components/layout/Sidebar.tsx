@@ -11,19 +11,12 @@
  */
 import { NavLink } from 'react-router-dom';
 import type { UserRole } from '../../types';
+import { getNavSections, type IconName } from './nav-config';
 
 /* ---------------------------------------------------------------------------
  * Ikon SVG inline (stroke-based, 24×24) — tanpa dependensi eksternal.
  * ------------------------------------------------------------------------- */
-export type IconName =
-  | 'home'
-  | 'users'
-  | 'sliders'
-  | 'clipboard-check'
-  | 'trophy'
-  | 'file-text'
-  | 'clipboard'
-  | 'grid';
+export type { IconName };
 
 const ICON_PATHS: Record<IconName, JSX.Element> = {
   home: (
@@ -43,6 +36,12 @@ const ICON_PATHS: Record<IconName, JSX.Element> = {
   sliders: (
     <>
       <path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6" />
+    </>
+  ),
+  scale: (
+    <>
+      <path d="M12 3v18M7 21h10M5 7h14" />
+      <path d="M5 7l-3 7h6zM19 7l-3 7h6z" />
     </>
   ),
   'clipboard-check': (
@@ -100,56 +99,9 @@ export function SidebarIcon({ name, size = 20 }: { name: IconName; size?: number
 }
 
 /* ---------------------------------------------------------------------------
- * Definisi menu per role
+ * Definisi menu per role ada di ./nav-config.ts agar file ini hanya
+ * mengekspor komponen (aturan react-refresh).
  * ------------------------------------------------------------------------- */
-export interface NavItem {
-  label: string;
-  to: string;
-  icon: IconName;
-  /** Badge angka opsional (mis. jumlah pending) */
-  badge?: string;
-}
-
-export interface NavSection {
-  title?: string;
-  items: NavItem[];
-}
-
-/** Menu Admin — sesuai kriteria role-based navigation. */
-export const ADMIN_NAV: NavSection[] = [
-  {
-    title: 'Menu Utama',
-    items: [
-      { label: 'Dashboard', to: '/admin/dashboard', icon: 'grid' },
-      { label: 'Data Mahasiswa', to: '/admin/mahasiswa', icon: 'users' },
-      { label: 'Kriteria & Subkriteria', to: '/admin/kriteria', icon: 'sliders' },
-    ],
-  },
-  {
-    title: 'Analisis',
-    items: [
-      { label: 'Hasil Identifikasi', to: '/admin/hasil-identifikasi', icon: 'clipboard-check' },
-      { label: 'Ranking', to: '/admin/ranking', icon: 'trophy' },
-      { label: 'Laporan', to: '/admin/laporan', icon: 'file-text' },
-    ],
-  },
-];
-
-/** Menu Mahasiswa. */
-export const MAHASISWA_NAV: NavSection[] = [
-  {
-    title: 'Menu Utama',
-    items: [
-      { label: 'Dashboard', to: '/mahasiswa/dashboard', icon: 'grid' },
-      { label: 'Kuesioner', to: '/mahasiswa/kuesioner', icon: 'clipboard' },
-    ],
-  },
-];
-
-/** Ambil sections navigasi sesuai role. */
-export function getNavSections(role: UserRole): NavSection[] {
-  return role === 'admin' ? ADMIN_NAV : MAHASISWA_NAV;
-}
 
 /* ---------------------------------------------------------------------------
  * Sidebar component
