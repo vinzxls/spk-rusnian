@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Penjelasan Pengembangan Sistem SPK AHP + VIKOR</title>
+<style>
+  @page {
+    size: A4;
+    margin: 18mm 16mm 20mm 16mm;
+  }
+
+  * { box-sizing: border-box; }
+
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+  body {
+    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.62;
+    color: #1f2937;
+    margin: 0;
+  }
+
+  /* ---------- cover ---------- */
+  .cover {
+    height: 245mm;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    page-break-after: always;
+  }
+
+  .cover-rule {
+    width: 62px;
+    height: 4px;
+    background: #1d4ed8;
+    border-radius: 2px;
+    margin-bottom: 26px;
+  }
+
+  .cover-eyebrow {
+    font-size: 9.5pt;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #1d4ed8;
+    font-weight: 700;
+    margin: 0 0 14px;
+  }
+
+  .cover h1 {
+    font-size: 27pt;
+    line-height: 1.22;
+    margin: 0 0 18px;
+    color: #0f172a;
+    letter-spacing: -0.02em;
+    font-weight: 700;
+  }
+
+  .cover-sub {
+    font-size: 12pt;
+    color: #475569;
+    margin: 0 0 34px;
+    max-width: 130mm;
+    line-height: 1.55;
+  }
+
+  .cover-meta {
+    border-top: 1px solid #e2e8f0;
+    padding-top: 16px;
+    font-size: 9.5pt;
+    color: #64748b;
+  }
+
+  .cover-meta div { margin-bottom: 5px; }
+
+  .cover-meta strong {
+    color: #334155;
+    display: inline-block;
+    min-width: 78px;
+    font-weight: 600;
+  }
+
+  .cover-badge {
+    display: inline-block;
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    color: #1d4ed8;
+    font-size: 9pt;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 999px;
+    margin-bottom: 22px;
+  }
+
+  /* ---------- headings ---------- */
+  h2 {
+    font-size: 15pt;
+    color: #0f172a;
+    margin: 26px 0 12px;
+    padding-bottom: 7px;
+    border-bottom: 2px solid #e2e8f0;
+    letter-spacing: -0.01em;
+    page-break-after: avoid;
+    font-weight: 700;
+  }
+
+  h2 .num {
+    color: #1d4ed8;
+    margin-right: 8px;
+  }
+
+  h3 {
+    font-size: 11.5pt;
+    color: #1e293b;
+    margin: 18px 0 8px;
+    page-break-after: avoid;
+    font-weight: 700;
+  }
+
+  h4 {
+    font-size: 10.5pt;
+    color: #334155;
+    margin: 14px 0 6px;
+    page-break-after: avoid;
+  }
+
+  p { margin: 0 0 10px; }
+
+  /* ---------- tables ---------- */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0 16px;
+    font-size: 9.5pt;
+    page-break-inside: avoid;
+  }
+
+  th {
+    background: #f1f5f9;
+    color: #0f172a;
+    text-align: left;
+    font-weight: 700;
+    padding: 7px 10px;
+    border: 1px solid #e2e8f0;
+    vertical-align: top;
+  }
+
+  td {
+    padding: 7px 10px;
+    border: 1px solid #e2e8f0;
+    vertical-align: top;
+  }
+
+  tbody tr:nth-child(even) td { background: #fafbfc; }
+
+  /* ---------- callouts ---------- */
+  .note,
+  .warn,
+  .ok {
+    padding: 11px 14px;
+    border-radius: 6px;
+    margin: 14px 0;
+    font-size: 9.5pt;
+    line-height: 1.55;
+    page-break-inside: avoid;
+  }
+
+  .note {
+    background: #eff6ff;
+    border-left: 4px solid #1d4ed8;
+  }
+
+  .warn {
+    background: #fffbeb;
+    border-left: 4px solid #d97706;
+  }
+
+  .ok {
+    background: #f0fdf4;
+    border-left: 4px solid #16a34a;
+  }
+
+  .note strong, .warn strong, .ok strong { color: #0f172a; }
+
+  /* ---------- lists ---------- */
+  ul, ol { margin: 8px 0 12px; padding-left: 22px; }
+  li { margin-bottom: 5px; }
+
+  /* ---------- workflow ---------- */
+  .flow {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin: 16px 0;
+    page-break-inside: avoid;
+  }
+
+  .flow-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 11px;
+    padding: 8px 12px;
+    border-left: 3px solid #1d4ed8;
+    background: #f8fafc;
+    margin-bottom: 2px;
+  }
+
+  .flow-step .n {
+    flex: 0 0 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: #1d4ed8;
+    color: #fff;
+    font-size: 9pt;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1px;
+  }
+
+  .flow-step .txt { flex: 1; }
+  .flow-step strong { color: #0f172a; }
+  .flow-step span { color: #64748b; }
+
+  /* ---------- misc ---------- */
+  code {
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 9pt;
+    background: #f1f5f9;
+    padding: 1.5px 5px;
+    border-radius: 3px;
+    color: #0f172a;
+    border: 1px solid #e2e8f0;
+  }
+
+  .avoid { page-break-inside: avoid; }
+  .page-break { page-break-before: always; }
+
+  .summary-box {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 16px 18px;
+    margin: 18px 0;
+    background: #fcfdff;
+    page-break-inside: avoid;
+  }
+
+  .kpi-row {
+    display: flex;
+    gap: 10px;
+    margin: 16px 0;
+    page-break-inside: avoid;
+  }
+
+  .kpi {
+    flex: 1;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 12px 10px;
+    text-align: center;
+    background: #fff;
+  }
+
+  .kpi .v {
+    font-size: 17pt;
+    font-weight: 700;
+    color: #1d4ed8;
+    line-height: 1.1;
+  }
+
+  .kpi .l {
+    font-size: 8.5pt;
+    color: #64748b;
+    margin-top: 4px;
+    line-height: 1.35;
+  }
+
+  .footer-note {
+    margin-top: 28px;
+    padding-top: 14px;
+    border-top: 1px solid #e2e8f0;
+    font-size: 9pt;
+    color: #64748b;
+    text-align: center;
+  }
+</style>
+</head>
+<body>
+
+<!-- ================= COVER ================= -->
+<section class="cover">
+  <div class="cover-rule"></div>
+  <p class="cover-eyebrow">Dokumen Penjelasan Pengembangan</p>
+  <h1>Sistem Pendukung Keputusan<br>Identifikasi Kecanduan<br>Media Sosial</h1>
+  <p class="cover-sub">
+    Metode AHP (Analytical Hierarchy Process) untuk pembobotan kriteria dan
+    VIKOR untuk perangkingan mahasiswa — beserta penjelasan fitur yang baru
+    ditambahkan dan manfaatnya bagi pengguna.
+  </p>
+
+  <div class="cover-badge">AHP + VIKOR · Panel Admin</div>
+
+  <div class="cover-meta">
+    <div><strong>Jenis</strong> Penjelasan fitur &amp; tujuan pengembangan</div>
+    <div><strong>Modul</strong> Pembobotan AHP · Rekap Kuesioner · Export Excel · Ranking · Hasil Identifikasi · Laporan</div>
+    <div><strong>Tanggal</strong> 31 Oktober 2026</div>
+    <div><strong>Status</strong> Selesai dan terverifikasi</div>
+  </div>
+</section>
+
+<!-- ================= RINGKASAN ================= -->
+<h2><span class="num">1.</span>Ringkasan Singkat</h2>
+
+<p>
+  Pada tahap ini sistem dilengkapi dari yang sebelumnya <strong>baru tampak
+  lengkap</strong> menjadi <strong>benar-benar bisa dipakai untuk penelitian</strong>.
+  Sebelumnya beberapa halaman masih berupa teks penjelasan saja, dan semua
+  perhitungan memakai asumsi bobot yang sama rata untuk setiap kriteria.
+</p>
+
+<p>
+  Setelah pengembangan ini, admin dapat menentukan bobot prioritas kriteria
+  melalui perbandingan berpasangan, memantau mahasiswa mana yang sudah
+  menyelesaikan kuesioner beserta skornya, mengunduh rekap tersebut ke Excel,
+  melihat perangkingan, serta mencetak laporan yang memakai bobot sungguhan.
+</p>
+
+<div class="kpi-row">
+  <div class="kpi">
+    <div class="v">6</div>
+    <div class="l">Modul baru /<br>diaktifkan</div>
+  </div>
+  <div class="kpi">
+    <div class="v">2</div>
+    <div class="l">Halaman baru<br>di panel admin</div>
+  </div>
+  <div class="kpi">
+    <div class="v">3</div>
+    <div class="l">Sheet dalam<br>satu file Excel</div>
+  </div>
+  <div class="kpi">
+    <div class="v">0</div>
+    <div class="l">Error &amp; peringatan<br>pada pemeriksaan kode</div>
+  </div>
+</div>
+
+<!-- ================= MASALAH ================= -->
+<h2><span class="num">2.</span>Kondisi Sebelumnya dan Dampaknya</h2>
+
+<p>
+  Bagian ini menjelaskan <em>mengapa</em> pekerjaan ini perlu dilakukan.
+  Semua poin di bawah adalah kondisi nyata sebelum pengembangan.
+</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="width:44%">Kondisi sebelumnya</th>
+      <th>Akibatnya bagi pengguna</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Halaman <strong>Ranking</strong> dan <strong>Hasil Identifikasi</strong> hanya berisi teks penjelasan</td>
+      <td>Admin tidak bisa melihat hasil perangkingan sama sekali, meski data kuesioner sudah ada</td>
+    </tr>
+    <tr>
+      <td>Bobot kriteria dianggap <strong>sama rata (0,2 untuk masing-masing)</strong></td>
+      <td>Hasil perhitungan tidak mencerminkan penilaian pakar — padahal itulah inti metode AHP</td>
+    </tr>
+    <tr>
+      <td>Belum ada halaman input perbandingan berpasangan</td>
+      <td>Metode AHP yang menjadi judul penelitian tidak dapat dijalankan</td>
+    </tr>
+    <tr>
+      <td>Belum ada rekap pengisian kuesioner</td>
+      <td>Admin tidak tahu siapa yang sudah atau belum mengisi, dan tidak ada bukti skor untuk dilaporkan</td>
+    </tr>
+    <tr>
+      <td>Belum ada fasilitas ekspor data</td>
+      <td>Rekap harus dicatat manual, rawan salah dan memakan waktu</td>
+    </tr>
+    <tr>
+      <td>Pemeriksa kualitas kode (ESLint) belum aktif</td>
+      <td>Kesalahan kecil pada kode bisa lolos tanpa terdeteksi</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ================= FITUR 1 ================= -->
+<h2><span class="num">3.</span>Fitur yang Ditambahkan</h2>
+
+<h3>3.1 Halaman Pembobotan AHP — inti metode AHP akhirnya dapat dipakai</h3>
+
+<p>
+  <strong>Tujuan:</strong> menentukan tingkat kepentingan setiap kriteria
+  menurut penilaian admin/pakar, bukan asumsi sama rata.
+</p>
+
+<p>
+  <strong>Cara kerja:</strong> admin membandingkan kriteria satu lawan satu —
+  misalnya “Durasi lebih penting 5 kali dibanding Frekuensi”. Untuk 5 kriteria
+  terdapat 10 pasangan perbandingan. Dari input tersebut sistem otomatis
+  menghitung:
+</p>
+
+<ul>
+  <li><strong>Bobot prioritas</strong> setiap kriteria, dengan total selalu 100%</li>
+  <li><strong>Uji konsistensi (CR)</strong> — memeriksa apakah penilaian admin
+      masuk akal atau saling bertentangan. Bila CR ≥ 0,1 sistem memberi
+      peringatan agar penilaian diperbaiki</li>
+  <li><strong>Matriks perbandingan 5×5</strong> dan matriks ternormalisasi,
+      ditampilkan sebagai bukti perhitungan</li>
+</ul>
+
+<div class="note">
+  <strong>Mengapa ini penting:</strong> inilah yang membedakan sistem ini dari
+  sekadar rata-rata biasa. Bobot hasil input otomatis dipakai di seluruh halaman
+  lain — Ranking, Hasil Identifikasi, Rekap Kuesioner, dan Laporan — sehingga
+  tidak perlu input ulang dan tidak ada angka yang berbeda antar halaman.
+</div>
+
+<table>
+  <thead>
+    <tr>
+      <th style="width:14%">Kode</th>
+      <th style="width:30%">Kriteria</th>
+      <th>Tipe</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td><code>C1</code></td><td>Durasi</td><td>Cost — semakin rendah semakin baik</td></tr>
+    <tr><td><code>C2</code></td><td>Frekuensi</td><td>Cost — semakin rendah semakin baik</td></tr>
+    <tr><td><code>C3</code></td><td>Ketergantungan</td><td>Cost — semakin rendah semakin baik</td></tr>
+    <tr><td><code>C4</code></td><td>Gangguan Akademik</td><td>Cost — semakin rendah semakin baik</td></tr>
+    <tr><td><code>C5</code></td><td>FoMO (Fear of Missing Out)</td><td>Cost — semakin rendah semakin baik</td></tr>
+  </tbody>
+</table>
+
+<!-- ---------- FITUR 2 ---------- -->
+<h3>3.2 Halaman Rekap Kuesioner — menjawab “siapa yang sudah selesai?”</h3>
+
+<p>
+  <strong>Tujuan:</strong> admin dapat memantau pengisian kuesioner seluruh
+  mahasiswa dalam satu tabel.
+</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="width:30%">Kolom</th>
+      <th>Arti sederhana</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Status</td>
+      <td><strong>Selesai</strong> atau <strong>Belum</strong> mengisi</td>
+    </tr>
+    <tr>
+      <td>Terjawab</td>
+      <td>Berapa dari 25 pertanyaan yang sudah diisi (mis. 25/25)</td>
+    </tr>
+    <tr>
+      <td><strong>Total Skor</strong></td>
+      <td>
+        Jumlah seluruh jawaban, rentang 25–125. Inilah yang dimaksud sebagai
+        <strong>“berapa benar”</strong> pada permintaan awal
+      </td>
+    </tr>
+    <tr>
+      <td><strong>Skor AHP</strong></td>
+      <td>Skor gabungan setelah mempertimbangkan bobot prioritas kriteria, skala 1–5</td>
+    </tr>
+    <tr>
+      <td>Nilai C1–C5</td>
+      <td>Rata-rata jawaban per kriteria: Durasi, Frekuensi, Ketergantungan, Gangguan Akademik, FoMO</td>
+    </tr>
+    <tr>
+      <td>Q &amp; Rank</td>
+      <td>Posisi mahasiswa dalam perangkingan VIKOR</td>
+    </tr>
+    <tr>
+      <td>Kategori</td>
+      <td>Rendah / Sedang / Tinggi / Sangat Tinggi</td>
+    </tr>
+    <tr>
+      <td>Waktu Submit</td>
+      <td>Kapan kuesioner dikirim</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>
+  Di bagian atas halaman tersedia ringkasan: berapa mahasiswa yang sudah
+  mengisi, berapa yang belum, rata-rata skor, dan skor terendah. Tersedia pula
+  pencarian serta filter status — berguna ketika jumlah mahasiswa banyak.
+</p>
+
+<div class="warn">
+  <strong>Catatan soal istilah “berapa benar”:</strong> karena kuesioner ini
+  bersifat <em>pengukuran sikap</em> dengan skala 1–5, bukan ujian dengan kunci
+  jawaban, maka “berapa benar” di sini berarti <strong>total skor jawaban</strong>,
+  bukan jumlah jawaban yang cocok dengan kunci. Hal ini sudah dikonfirmasi
+  pada awal pengerjaan.
+</div>
+
+<!-- ---------- FITUR 3 ---------- -->
+<h3 class="page-break">3.3 Ekspor Excel — data siap dilampirkan ke laporan</h3>
+
+<p>
+  Satu tombol <strong>Export Excel</strong> menghasilkan satu file berisi
+  <strong>tiga lembar kerja</strong>:
+</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="width:26%">Lembar kerja</th>
+      <th>Isi dan kegunaan</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Rekap Kuesioner</strong></td>
+      <td>
+        Tabel utama, satu baris per mahasiswa, sudah diformat rapi — judul
+        tebal dan baris judul terkunci saat digulir. Memuat status, skor,
+        nilai kriteria, serta hasil VIKOR
+      </td>
+    </tr>
+    <tr>
+      <td><strong>Bobot AHP</strong></td>
+      <td>
+        Bobot setiap kriteria beserta persentasenya, ditambah hasil uji
+        konsistensi (λmax, CI, RI, CR). Berguna sebagai bukti perhitungan
+        pada lampiran
+      </td>
+    </tr>
+    <tr>
+      <td><strong>Detail Jawaban</strong></td>
+      <td>
+        25 jawaban mentah per responden (<code>C1_A1</code> … <code>C5_A5</code>)
+        untuk keperluan audit atau pengolahan ulang
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<p>
+  <strong>Manfaat:</strong> data dapat langsung diolah di Excel, dilampirkan
+  pada laporan, atau diserahkan kepada pembimbing tanpa perlu mengetik ulang.
+</p>
+
+<!-- ---------- FITUR 4 ---------- -->
+<h3>3.4 Ranking dan Hasil Identifikasi — dari teks penjelasan menjadi halaman kerja</h3>
+
+<ul>
+  <li>
+    <strong>Ranking:</strong> tabel peringkat lengkap dengan pencarian, filter
+    kategori, dan pengurutan. Peringkat 1 berarti tingkat kecanduan paling
+    rendah. Halaman ini juga menampilkan bobot kriteria yang sedang dipakai
+    beserta indikator apakah bobot tersebut sudah berasal dari AHP atau masih
+    setara.
+  </li>
+  <li>
+    <strong>Hasil Identifikasi:</strong> kartu ringkasan (jumlah responden,
+    sebaran kategori, rata-rata indeks Q) serta tabel yang dapat diklik per
+    mahasiswa untuk melihat nilai tiap kriteria dan keterangan kategorinya.
+  </li>
+</ul>
+
+<div class="ok">
+  <strong>Prinsip yang dijaga:</strong> Ranking, Hasil Identifikasi, dan Rekap
+  Kuesioner memakai <strong>satu sumber perhitungan yang sama</strong>. Dengan
+  demikian angka di halaman mana pun tidak akan berbeda — tidak akan muncul
+  pertanyaan “kenapa di sini 0,35 tetapi di sana 0,36”.
+</div>
+
+<!-- ---------- FITUR 5 ---------- -->
+<h3>3.5 Laporan kini memakai bobot AHP yang sebenarnya</h3>
+
+<p>
+  Sebelumnya laporan tercetak dengan bobot sama rata. Sekarang laporan memuat:
+</p>
+
+<ul>
+  <li>Tabel <strong>bobot kriteria AHP</strong> yang benar-benar dipakai (bobot dan persentase)</li>
+  <li>Identitas institusi, fakultas, dan program studi</li>
+  <li>Ringkasan sebaran kategori kecanduan</li>
+  <li>Tabel perangkingan lengkap dengan nilai S, R, Q, dan peringkat</li>
+</ul>
+
+<p>
+  Apabila admin belum mengisi bobot AHP, sistem tetap dapat membuat laporan
+  dengan bobot setara — namun laporan akan <strong>menyatakan secara terbuka</strong>
+  bahwa bobot belum diisi. Dengan begitu tidak ada klaim yang menyesatkan.
+</p>
+
+<!-- ---------- FITUR 6 ---------- -->
+<h3>3.6 Pemeriksa kualitas kode (ESLint)</h3>
+
+<p>
+  <strong>Tujuan:</strong> menjaga kualitas dan konsistensi kode untuk
+  pengembangan berikutnya. Alat ini secara otomatis memeriksa kesalahan umum,
+  kode yang tidak terpakai, dan potensi bug setiap kali pengembangan dilakukan.
+  Hasil pemeriksaan saat ini: <strong>0 error dan 0 peringatan</strong>.
+</p>
+
+<p>
+  Bagi pengguna akhir alat ini tidak terlihat, tetapi membuat sistem lebih aman
+  dan lebih mudah dirawat di kemudian hari.
+</p>
+
+<!-- ================= MANFAAT ================= -->
+<h2><span class="num">4.</span>Manfaat Keseluruhan bagi Pengguna</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th style="width:6%">No</th>
+      <th style="width:34%">Manfaat</th>
+      <th>Penjelasan</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td><strong>Sistem lengkap sesuai metode penelitian</strong></td>
+      <td>AHP untuk pembobotan dan VIKOR untuk perangkingan, keduanya benar-benar berjalan</td>
+    </tr>
+    <tr>
+      <td>2</td>
+      <td><strong>Admin punya kendali penuh</strong></td>
+      <td>Bobot kriteria ditentukan sendiri, dapat diubah dan dihitung ulang kapan saja</td>
+    </tr>
+    <tr>
+      <td>3</td>
+      <td><strong>Tidak ada lagi kerja manual</strong></td>
+      <td>Rekap dan laporan siap diunduh dalam hitungan detik</td>
+    </tr>
+    <tr>
+      <td>4</td>
+      <td><strong>Hasil dapat dipertanggungjawabkan</strong></td>
+      <td>Ada uji konsistensi dan jejak jawaban mentah sebagai bukti</td>
+    </tr>
+    <tr>
+      <td>5</td>
+      <td><strong>Angka konsisten</strong></td>
+      <td>Semua halaman dan laporan memakai sumber perhitungan yang sama</td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ================= ALUR ================= -->
+<h2><span class="num">5.</span>Alur Kerja yang Disarankan</h2>
+
+<div class="flow">
+  <div class="flow-step">
+    <div class="n">1</div>
+    <div class="txt"><strong>Login sebagai admin</strong><br><span>Masuk ke panel admin sistem</span></div>
+  </div>
+  <div class="flow-step">
+    <div class="n">2</div>
+    <div class="txt"><strong>Pembobotan AHP</strong><br><span>Isi 10 perbandingan berpasangan, pastikan status “Konsisten” (CR &lt; 0,1), lalu simpan</span></div>
+  </div>
+  <div class="flow-step">
+    <div class="n">3</div>
+    <div class="txt"><strong>Mahasiswa mengisi kuesioner</strong><br><span>25 pertanyaan, skala 1–5</span></div>
+  </div>
+  <div class="flow-step">
+    <div class="n">4</div>
+    <div class="txt"><strong>Rekap Kuesioner</strong><br><span>Pantau siapa yang sudah atau belum mengisi, lalu Export Excel</span></div>
+  </div>
+  <div class="flow-step">
+    <div class="n">5</div>
+    <div class="txt"><strong>Ranking / Hasil Identifikasi</strong><br><span>Lihat peringkat dan kategori kecanduan tiap mahasiswa</span></div>
+  </div>
+  <div class="flow-step">
+    <div class="n">6</div>
+    <div class="txt"><strong>Laporan</strong><br><span>Generate laporan, lalu cetak atau simpan sebagai PDF</span></div>
+  </div>
+</div>
+
+<div class="warn">
+  <strong>Penting:</strong> langkah 2 sebaiknya dilakukan <strong>sebelum</strong>
+  langkah 4 sampai 6, karena seluruh skor dan peringkat dihitung berdasarkan
+  bobot yang tersimpan.
+</div>
+
+<!-- ================= BATASAN ================= -->
+<h2><span class="num">6.</span>Hal yang Perlu Diketahui (Batasan Saat Ini)</h2>
+
+<table>
+  <thead>
+    <tr>
+      <th style="width:30%">Hal</th>
+      <th>Penjelasan</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Data tersimpan di browser</strong></td>
+      <td>
+        Untuk tahap prototipe, data (akun, jawaban kuesioner, dan bobot AHP)
+        disimpan pada penyimpanan browser di perangkat yang dipakai. Artinya
+        satu perangkat memuat satu kumpulan data, dan menghapus data browser
+        akan menghapus datanya. Untuk penggunaan nyata lintas perangkat
+        diperlukan basis data pada server.
+      </td>
+    </tr>
+    <tr>
+      <td><strong>Nilai Q bersifat relatif</strong></td>
+      <td>
+        Q adalah indeks VIKOR yang dihitung relatif terhadap kelompok
+        responden. Bila jumlah responden bertambah, nilai Q dapat berubah.
+      </td>
+    </tr>
+    <tr>
+      <td><strong>Minimal 3 responden</strong></td>
+      <td>
+        Dengan 1–2 responden, nilai Q belum bermakna (dapat selalu 0 sehingga
+        semua masuk kategori “Rendah”). Sistem sudah menampilkan peringatan
+        otomatis mengenai hal ini.
+      </td>
+    </tr>
+    <tr>
+      <td><strong>Kategori berbasis ambang Q</strong></td>
+      <td>
+        Rendah (Q ≤ 0,25), Sedang (0,25 &lt; Q ≤ 0,5), Tinggi (0,5 &lt; Q ≤ 0,75),
+        Sangat Tinggi (Q &gt; 0,75). Ambang ini dapat disesuaikan apabila
+        pembimbing memiliki ketentuan lain.
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ================= PENGUJIAN ================= -->
+<h2><span class="num">7.</span>Hasil Pengujian</h2>
+
+<p>
+  Seluruh fitur telah diuji pada aplikasi yang berjalan, bukan hanya diperiksa
+  dari sisi kode.
+</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="width:52%">Pemeriksaan</th>
+      <th>Hasil</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Pengujian fitur baru (kuesioner, AHP, rekap, Excel, laporan)</td>
+      <td><strong>19 dari 19 skenario lulus</strong>, tanpa error saat aplikasi berjalan</td>
+    </tr>
+    <tr>
+      <td>Pengujian regresi alur utama (login, dashboard, laporan)</td>
+      <td><strong>24 dari 24 skenario lulus</strong></td>
+    </tr>
+    <tr>
+      <td>Pengujian regresi halaman kriteria &amp; subkriteria</td>
+      <td><strong>19 dari 19 skenario lulus</strong></td>
+    </tr>
+    <tr>
+      <td>Pemeriksaan kualitas kode (ESLint)</td>
+      <td>0 error, 0 peringatan</td>
+    </tr>
+    <tr>
+      <td>Pemeriksaan tipe TypeScript</td>
+      <td>Bersih, tanpa kesalahan</td>
+    </tr>
+    <tr>
+      <td>Proses build produksi</td>
+      <td>Berhasil</td>
+    </tr>
+    <tr>
+      <td>Verifikasi isi file Excel</td>
+      <td>Tiga lembar kerja benar, struktur dan nilainya sesuai</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Contoh hasil uji pada data nyata:</p>
+
+<ul>
+  <li>
+    Bobot yang tersimpan dari input AHP:
+    <code>C1 0,5487</code> · <code>C2 0,2275</code> · <code>C3 0,1195</code> ·
+    <code>C4 0,0522</code> · <code>C5 0,0522</code> — total 100%
+  </li>
+  <li>
+    Mahasiswa contoh: status <strong>Selesai</strong>, terjawab 25/25,
+    total skor <strong>100</strong>, Skor AHP <strong>4,0000</strong>
+  </li>
+  <li>
+    File Excel terunduh dengan nama <code>rekap-kuesioner-2026-10-31.xlsx</code>
+    dan terbaca benar oleh aplikasi pengolah spreadsheet
+  </li>
+</ul>
+
+<!-- ================= KESIMPULAN ================= -->
+<h2><span class="num">8.</span>Kesimpulan</h2>
+
+<div class="summary-box">
+  <p style="margin-bottom:8px">
+    Pengembangan ini mengubah sistem dari <strong>“sudah tampak lengkap”</strong>
+    menjadi <strong>“benar-benar dapat dipakai untuk penelitian”</strong>.
+  </p>
+  <p style="margin-bottom:8px">
+    Metode AHP tidak lagi hanya nama pada judul — bobotnya dihitung, diuji
+    konsistensinya, disimpan, dan dipakai secara konsisten di seluruh sistem.
+  </p>
+  <p style="margin-bottom:0">
+    Admin juga memperoleh alat kerja nyata: memantau pengisian kuesioner,
+    mengunduh rekap dalam bentuk Excel, serta mencetak laporan yang dapat
+    dipertanggungjawabkan.
+  </p>
+</div>
+
+<h3>Langkah Lanjutan yang Dapat Dipertimbangkan</h3>
+
+<ul>
+  <li>
+    <strong>Migrasi data ke server</strong> agar dapat diakses dari banyak
+    perangkat sekaligus dan data tidak bergantung pada satu browser
+  </li>
+  <li>
+    <strong>Penyesuaian ambang kategori</strong> bila pembimbing menetapkan
+    ketentuan berbeda
+  </li>
+  <li>
+    <strong>Penambahan jumlah responden</strong> agar nilai Q dan perangkingan
+    menjadi lebih stabil dan bermakna
+  </li>
+</ul>
+
+<p class="footer-note">
+  Dokumen ini disusun sebagai penjelasan pengembangan untuk keperluan klien.<br>
+  Sistem Pendukung Keputusan Identifikasi Kecanduan Media Sosial — AHP + VIKOR
+</p>
+
+</body>
+</html>

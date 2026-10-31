@@ -22,6 +22,8 @@ Jalankan perintah berikut untuk mengunduh semua library yang diperlukan:
 npm install
 ```
 
+> **Wajib dijalankan setiap kali setelah `git pull`.** Perintah `git pull` hanya mengambil kode, bukan library. Kalau ada library baru yang ditambahkan, sistem akan gagal jalan sampai `npm install` dijalankan.
+
 ### Langkah C: Menjalankan Sistem
 Jalankan aplikasi dengan perintah:
 ```cmd
@@ -33,15 +35,68 @@ Tunggu beberapa saat sampai muncul link seperti: `http://localhost:5173`. Klik l
 ## 3. Akun Akses (Login)
 * **Admin**:
   * Username: `admin1`
-  * Password: `password_demo`
+  * Password: `demo`
 * **Mahasiswa**:
-  * NIM: `202106070001`
-  * Password: `password_demo`
+  * NIM: `202106070001` (Budi Santoso)
+  * NIM: `202206070001` (Ani Wijaya)
+  * Password: `demo`
 
-## 4. Tips Jika Ada Kendala
-* Jika saat menjalankan `npm run dev` muncul error "command not found", pastikan Node.js sudah terinstal dengan benar.
-* Jika browser tidak terbuka, buka browser Anda dan ketik manual: `http://localhost:5173`.
-* Jika butuh pembaruan kode terbaru dari GitHub, ketik: `git pull`.
+## 4. Cara Memperbarui Sistem
+Ketika ada pembaruan kode, jalankan **berurutan** (jangan hanya `git pull`):
+
+```cmd
+git pull
+npm install
+```
+
+Lalu hentikan server yang sedang berjalan dengan **Ctrl + C**, dan jalankan ulang:
+```cmd
+npm run dev
+```
+
+## 5. Tips Jika Ada Kendala
+
+### `Failed to resolve import "..."` atau `Cannot find module`
+Artinya ada library yang belum terpasang. Solusi:
+```cmd
+npm install
+```
+Lalu **Ctrl + C** pada terminal yang error, dan `npm run dev` lagi.
+
+### Masih error setelah `npm install`
+Biasanya cache lama. Reset total library:
+```cmd
+rmdir /s /q node_modules
+del package-lock.json
+npm install
+npm run dev
+```
+
+### Error "command not found" / `npm` tidak dikenali
+Pastikan Node.js sudah terinstal. Cek dengan:
+```cmd
+node -v
+npm -v
+```
+Bila kosong, instal ulang Node.js dari https://nodejs.org (pilih versi LTS).
+
+### Port 5173 sudah dipakai
+Tutup terminal lain yang masih menjalankan sistem, atau hentikan dengan **Ctrl + C**. Bisa juga jalankan di port lain:
+```cmd
+npm run dev -- --port 5174
+```
+
+### Browser tidak terbuka otomatis
+Buka browser Anda dan ketik manual: `http://localhost:5173`
+
+### Halaman tampak kosong atau data hilang
+Data (akun, jawaban kuesioner, bobot AHP) disimpan di penyimpanan browser. Jangan hapus data situs untuk `localhost` bila tidak ingin kehilangan data. Coba juga *hard refresh* dengan **Ctrl + Shift + R**.
 
 ---
+
+### Catatan
+Untuk penggunaan nyata oleh banyak pengguna sekaligus, data perlu dipindahkan ke basis data server. Versi saat ini menyimpan data di browser sehingga satu perangkat memuat satu kumpulan data.
+
+---
+
 *Terima kasih telah menggunakan Sistem SPK Rusnian.*
