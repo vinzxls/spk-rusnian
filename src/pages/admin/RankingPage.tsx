@@ -5,7 +5,7 @@ export function RankingPage() {
   const { hasRole } = useAuth()
 
   if (!hasRole('admin')) {
-    return <p className="text-red-600">Akses ditolak</p>
+    return <p className="ds-text-danger">Akses ditolak</p>
   }
 
   return (

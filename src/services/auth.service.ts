@@ -4,18 +4,21 @@
  *  - verifikasi password_hash konsep (lihat auth-helper)
  *
  *  Sesi disimpan di `sessionStorage` agar tahan page reload.
+ *  Data akun disimpan di localStorage lewat services/user-store.
  *  Di produksi: ganti dengan token HTTP-only cookie + verifikasi server.
  */
 import type { User, Mahasiswa, AuthSession, LoginCredentials, LoginResponse, UserRole } from '../types';
 import { isNim, normalizeIdentifier, verifyPasswordConcept } from '../utils/auth-helper';
+import {
+  DEMO_PASSWORD_HASH,
+  getMahasiswa,
+  getUsers,
+  saveMahasiswa,
+  saveUsers,
+  seedIfEmpty,
+} from './user-store';
 
 const SESSION_KEY = 'rusnian.session';
-
-/** Mock tabel `users` — di produksi: SELECT * FROM users WHERE ... */
-const userStore: User[] = [];
-
-/** Mock tabel `mahasiswa` — di produksi: SELECT * FROM mahasiswa WHERE ... */
-const mahasiswaStore: Mahasiswa[] = [];
 
 /** Sesi aktif di memori (diisi dari sessionStorage saat boot). */
 let activeSession: AuthSession | undefined = undefined;
@@ -34,7 +37,10 @@ function loadSession(): void {
       activeSession = undefined;
       return;
     }
-    activeSession = parsed;
+    // Segarkan objek user dari storage: data bisa berubah setelah halaman admin
+    // mengedit/menghapus mahasiswa.
+    const terkini = lookupUserById(parsed.user.id);
+    activeSession = terkini ? { ...parsed, user: terkini } : parsed;
   } catch {
     activeSession = undefined;
   }
@@ -115,33 +121,113 @@ export function hasRole(role: UserRole): boolean {
 }
 
 function lookupMahasiswaByNim(nim: string): Mahasiswa | undefined {
-  return mahasiswaStore.find((m) => m.nim === nim);
+  const m = getMahasiswa().find((x) => x.nim === nim);
+  return m ? toMahasiswa(m) : undefined;
 }
 
 function lookupMahasiswaByUserId(userId: string): Mahasiswa | undefined {
-  return mahasiswaStore.find((m) => m.user_id === userId);
+  const m = getMahasiswa().find((x) => x.user_id === userId);
+  return m ? toMahasiswa(m) : undefined;
 }
 
 function lookupUserById(id: string): User | undefined {
-  return userStore.find((u) => u.id === id);
+  return getUsers().find((u) => u.id === id);
 }
 
 function lookupUserByUsername(username: string): User | undefined {
-  return userStore.find((u) => u.username === username);
+  return getUsers().find((u) => u.username === username);
 }
 
+/** Buang field khusus tabel mahasiswa agar cocok dengan tipe `Mahasiswa`. */
+function toMahasiswa(m: {
+  id: string;
+  nim: string;
+  nama: string;
+  prodi: string;
+  angkatan: number;
+  user_id: string;
+  created_at: string;
+  updated_at: string;
+}): Mahasiswa {
+  return {
+    id: m.id,
+    nim: m.nim,
+    nama: m.nama,
+    prodi: m.prodi,
+    angkatan: m.angkatan,
+    user_id: m.user_id,
+    created_at: m.created_at,
+    updated_at: m.updated_at,
+  };
+}
+
+/**
+ * Siapkan data awal. Idempoten — hanya mengisi bila storage masih kosong,
+ * sehingga data yang sudah ditambahkan admin tidak terhapus saat reload.
+ */
 export function initMockData(): void {
-  userStore.length = 0;
-  mahasiswaStore.length = 0;
+  seedIfEmpty();
+}
+
+/**
+ * Daftarkan akun login untuk mahasiswa baru.
+ *
+ * Tanpa ini, mahasiswa yang ditambahkan lewat halaman Data Mahasiswa hanya masuk
+ * ke tabel mahasiswa tanpa akun di tabel users, sehingga login dengan NIM selalu
+ * gagal "Mahasiswa tidak ditemukan".
+ */
+export function registerMahasiswaAccount(input: {
+  userId: string;
+  nim: string;
+  nama: string;
+  prodi: string;
+  fakultas?: string;
+  angkatan: number;
+}): void {
+  const { userId, nim, nama, prodi, fakultas = 'MIPA', angkatan } = input;
+
+  const users = getUsers();
+  if (users.some((u) => u.username === nim)) return;
 
   const now = new Date().toISOString();
-  const demoHash = '$2a$10$N.z3HdLyZ5V8xG.IpxxZAu';
-  userStore.push(
-    { id: 'user-1', username: 'admin1', password_hash: demoHash, role: 'admin', nama_lengkap: 'Admin Prodi Ilmu Komputer', created_at: now, updated_at: now },
-    { id: 'user-2', username: '202106070001', password_hash: demoHash, role: 'mahasiswa', nama_lengkap: 'Budi Santoso', created_at: now, updated_at: now }
-  );
-  mahasiswaStore.push({
-    id: 'mah-1', nim: '202106070001', nama: 'Budi Santoso', prodi: 'Ilmu Komputer',
-    angkatan: 2021, user_id: 'user-2', created_at: now, updated_at: now,
-  });
+  saveUsers([
+    ...users,
+    {
+      id: userId,
+      username: nim,
+      password_hash: DEMO_PASSWORD_HASH,
+      role: 'mahasiswa',
+      nama_lengkap: nama,
+      created_at: now,
+      updated_at: now,
+    },
+  ]);
+
+  const daftar = getMahasiswa();
+  if (daftar.some((m) => m.nim === nim)) return;
+
+  saveMahasiswa([
+    ...daftar,
+    {
+      id: `mah-${userId}`,
+      user_id: userId,
+      nim,
+      nama,
+      prodi,
+      fakultas,
+      angkatan,
+      created_at: now,
+      updated_at: now,
+    },
+  ]);
+}
+
+/** Hapus akun login mahasiswa saat datanya dihapus, agar NIM bisa dipakai ulang. */
+export function unregisterMahasiswaAccount(nim: string): void {
+  const users = getUsers();
+  const target = users.find((u) => u.username === nim && u.role === 'mahasiswa');
+  if (!target) return;
+
+  saveUsers(users.filter((u) => u.id !== target.id));
+  saveMahasiswa(getMahasiswa().filter((m) => m.user_id !== target.id));
 }

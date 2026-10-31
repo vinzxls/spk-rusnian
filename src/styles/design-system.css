@@ -23,6 +23,10 @@
   /* --- Hallmark core: paper / ink / accent --- */
   --color-paper: #faf9f6;
   --color-ink: #1a1a1a;
+  /* Teks sekunder — dipakai landing & caption. Sebelumnya tidak pernah
+     dideklarasikan sehingga semua `var(--color-ink-2)` gagal → teks jadi
+     warna default (hitam penuh), bukan abu-abu. */
+  --color-ink-2: #5f5a52;
   --color-accent: #1a3d6e;
   --color-accent-hover: #16355f;
   --color-accent-ink: #ffffff;

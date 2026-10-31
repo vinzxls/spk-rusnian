@@ -98,20 +98,30 @@ export function generateLaporanData(input: GenerateLaporanInput): LaporanData {
   };
 }
 
+/** Escape teks yang berasal dari input pengguna sebelum disisipkan ke HTML laporan. */
+function esc(value: unknown): string {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
 export function generateLaporanHTML(data: LaporanData): string {
   const rows = data.tabelRanking
     .map(
       (r, idx) => `
     <tr>
       <td>${idx + 1}</td>
-      <td>${r.mahasiswaData?.nim || r.alternativeId}</td>
-      <td>${r.alternativeName}</td>
-      <td>${r.mahasiswaData?.prodi || '-'}</td>
-      <td>${r.mahasiswaData?.angkatan || '-'}</td>
+      <td>${esc(r.mahasiswaData?.nim || r.alternativeId)}</td>
+      <td>${esc(r.alternativeName)}</td>
+      <td>${esc(r.mahasiswaData?.prodi || '-')}</td>
+      <td>${esc(r.mahasiswaData?.angkatan ?? '-')}</td>
       <td>${r.S.toFixed(6)}</td>
       <td>${r.R.toFixed(6)}</td>
       <td>${r.Q.toFixed(6)}</td>
-      <td>${r.kategoriKecanduan}</td>
+      <td>${esc(r.kategoriKecanduan)}</td>
       <td>${r.rank}</td>
     </tr>`
     )
@@ -122,7 +132,7 @@ export function generateLaporanHTML(data: LaporanData): string {
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>${data.header.judul}</title>
+  <title>${esc(data.header.judul)}</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; }
     h1, h2 { text-align: center; }
@@ -133,11 +143,11 @@ export function generateLaporanHTML(data: LaporanData): string {
   </style>
 </head>
 <body>
-  <h1>${data.header.judul}</h1>
-  <h2>${data.header.institusi}</h2>
-  <p><strong>Periode:</strong> ${data.header.periode}</p>
-  <p><strong>Tanggal Cetak:</strong> ${data.header.tanggalCetak}</p>
-  <p><strong>Dicetak Oleh:</strong> ${data.header.dicetakOleh}</p>
+  <h1>${esc(data.header.judul)}</h1>
+  <h2>${esc(data.header.institusi)}</h2>
+  <p><strong>Periode:</strong> ${esc(data.header.periode)}</p>
+  <p><strong>Tanggal Cetak:</strong> ${esc(data.header.tanggalCetak)}</p>
+  <p><strong>Dicetak Oleh:</strong> ${esc(data.header.dicetakOleh)}</p>
 
   <div class="ringkasan">
     <h3>Ringkasan Hasil</h3>
@@ -165,7 +175,7 @@ export function generateLaporanHTML(data: LaporanData): string {
     </tbody>
   </table>
 
-  <p style="margin-top: 30px;"><strong>Catatan:</strong> ${data.catatan}</p>
+  <p style="margin-top: 30px;"><strong>Catatan:</strong> ${esc(data.catatan)}</p>
 </body>
 </html>
   `.trim();

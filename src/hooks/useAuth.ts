@@ -1,14 +1,32 @@
-/** useAuth — React hook wrapper untuk auth.service
- *  state: user, session, isLoading, isAuthenticated, error
- *  actions: login, logout, checkSession
+/**
+ * useAuth — state autentikasi GLOBAL (React Context) di atas auth.service.
+ *
+ * Kenapa Context, bukan useState biasa:
+ *   Sebelumnya setiap pemanggilan useAuth() membuat salinan state sendiri-sendiri.
+ *   App dan ProtectedRoute punya sesi terpisah, sehingga setelah login App melihat
+ *   user tapi ProtectedRoute masih melihat null → redirect ke /login → App redirect
+ *   balik ke /admin/dashboard → loop tak berujung. Semua klik terasa "tidak berfungsi".
+ *
+ * Sekarang satu sumber kebenaran: AuthProvider menyimpan sesi sekali,
+ * semua komponen membaca nilai yang sama.
  */
-import { useCallback, useEffect, useState } from 'react';
+import {
+  createContext,
+  createElement,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react';
 import * as authService from '../services/auth.service';
 import type { AuthSession, LoginCredentials, User, UserRole } from '../types';
 
 export interface UseAuthState {
   user: User | null;
   session: AuthSession | null;
+  /** True selama sesi awal dibaca dari storage / selama proses login */
   isLoading: boolean;
   isAuthenticated: boolean;
   error: string | null;
@@ -21,20 +39,29 @@ export interface UseAuthActions {
   hasRole: (role: UserRole) => boolean;
 }
 
-/** Hook utama auth: sinkronkan state React dengan auth.service */
-export function useAuth(): UseAuthState & UseAuthActions {
+export type AuthContextValue = UseAuthState & UseAuthActions;
+
+const AuthContext = createContext<AuthContextValue | null>(null);
+
+/** Provider tunggal — dibungkus di main.tsx, di luar <App />. */
+export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<AuthSession | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  // Mulai true: jangan ambil keputusan redirect sebelum sesi tersimpan dibaca.
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  /** Sinkronkan state dari service (dipanggil saat mount & setelah aksi) */
+  /** Bootstrap: siapkan data demo lalu pulihkan sesi dari sessionStorage. */
+  useEffect(() => {
+    authService.initMockData();
+    setSession(authService.getCurrentSession() ?? null);
+    setIsLoading(false);
+  }, []);
+
   const checkSession = useCallback(() => {
-    const current = authService.getCurrentSession() ?? null;
-    setSession(current);
+    setSession(authService.getCurrentSession() ?? null);
     setError(null);
   }, []);
 
-  /** Login: set loading, panggil service, update state sesuai hasil */
   const login = useCallback(async (credentials: LoginCredentials): Promise<boolean> => {
     setIsLoading(true);
     setError(null);
@@ -44,7 +71,6 @@ export function useAuth(): UseAuthState & UseAuthActions {
         setSession(result.session);
         return true;
       }
-      // Login gagal → expose pesan error dari service
       setError(result.error.message);
       setSession(null);
       return false;
@@ -57,35 +83,43 @@ export function useAuth(): UseAuthState & UseAuthActions {
     }
   }, []);
 
-  /** Logout: clear service session & reset state */
   const logout = useCallback(() => {
     authService.logout();
     setSession(null);
     setError(null);
   }, []);
 
-  /** Cek sesi saat mount (persistensi real: baca token dari localStorage) */
-  useEffect(() => {
-    checkSession();
-  }, [checkSession]);
-
-  /** RBAC check berdasarkan sesi aktif */
   const hasRole = useCallback(
     (role: UserRole): boolean => session?.user?.role === role,
     [session]
   );
 
-  return {
-    user: session?.user ?? null,
-    session,
-    isLoading,
-    isAuthenticated: session !== null,
-    error,
-    login,
-    logout,
-    checkSession,
-    hasRole,
-  };
+  const value = useMemo<AuthContextValue>(
+    () => ({
+      user: session?.user ?? null,
+      session,
+      isLoading,
+      isAuthenticated: session !== null,
+      error,
+      login,
+      logout,
+      checkSession,
+      hasRole,
+    }),
+    [session, isLoading, error, login, logout, checkSession, hasRole]
+  );
+
+  // createElement dipakai (bukan JSX) karena file ini .ts, bukan .tsx.
+  return createElement(AuthContext.Provider, { value }, children);
+}
+
+/** Hook utama auth: baca sesi global dari context. */
+export function useAuth(): AuthContextValue {
+  const ctx = useContext(AuthContext);
+  if (!ctx) {
+    throw new Error('useAuth() harus dipakai di dalam <AuthProvider>');
+  }
+  return ctx;
 }
 
 export default useAuth;

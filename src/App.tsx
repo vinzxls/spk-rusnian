@@ -1,7 +1,5 @@
-import { useEffect } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { useAuth } from './hooks/useAuth'
-import { initMockData } from './services/auth.service'
 import { LandingPage } from './components/landing'
 import { LoginPage } from './pages/auth/LoginPage'
 import { DashboardAdmin } from './pages/admin/DashboardAdmin'
@@ -13,27 +11,33 @@ import { RankingPage } from './pages/admin/RankingPage'
 import { LaporanPage } from './pages/admin/LaporanPage'
 import { KuesionerFormPage } from './pages/mahasiswa/KuesionerFormPage'
 
+const homeFor = (role: string) => (role === 'admin' ? '/admin/dashboard' : '/mahasiswa/dashboard')
+
 function ProtectedRoute({ allowed, children }: { allowed: string[]; children: JSX.Element }) {
   const { user, isLoading } = useAuth()
+
+  // Jangan redirected sebelum sesi tersimpan selesai dibaca — ini yang dulu
+  // memicu loop /login ⇄ /admin/dashboard.
   if (isLoading) return <div className="ds-empty">Memuat...</div>
   if (!user) return <Navigate to="/login" replace />
-  if (!allowed.includes(user.role)) {
-    return <Navigate to={user.role === 'admin' ? '/admin/dashboard' : '/mahasiswa/dashboard'} replace />
-  }
+  if (!allowed.includes(user.role)) return <Navigate to={homeFor(user.role)} replace />
   return children
 }
 
 export default function App() {
-  const { user, login } = useAuth()
+  const { user, login, isLoading } = useAuth()
 
-  useEffect(() => {
-    initMockData()
-  }, [])
+  if (isLoading) {
+    return <div className="ds-empty">Memuat...</div>
+  }
 
   return (
     <Routes>
-      <Route path="/" element={user ? <Navigate to={user.role === 'admin' ? '/admin/dashboard' : '/mahasiswa/dashboard'} replace /> : <LandingPage />} />
-      <Route path="/login" element={user ? <Navigate to={user.role === 'admin' ? '/admin/dashboard' : '/mahasiswa/dashboard'} replace /> : <LoginPage onLogin={login} />} />
+      <Route path="/" element={user ? <Navigate to={homeFor(user.role)} replace /> : <LandingPage />} />
+      <Route
+        path="/login"
+        element={user ? <Navigate to={homeFor(user.role)} replace /> : <LoginPage onLogin={login} />}
+      />
 
       <Route path="/admin/dashboard" element={<ProtectedRoute allowed={['admin']}><DashboardAdmin /></ProtectedRoute>} />
       <Route path="/admin/mahasiswa" element={<ProtectedRoute allowed={['admin']}><MahasiswaCRUD /></ProtectedRoute>} />

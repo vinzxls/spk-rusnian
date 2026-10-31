@@ -93,7 +93,7 @@ export function LandingPage() {
             </p>
             <div style={{ display: 'flex', gap: 10, marginTop: 20, flexWrap: 'wrap' }}>
               <Link to="/login" className="ds-btn ds-btn-primary ds-btn-lg">Masuk ke Sistem</Link>
-              <Link to="#panduan" className="ds-btn ds-btn-secondary ds-btn-lg">Panduan Pengisian</Link>
+              <a href="#panduan" className="ds-btn ds-btn-secondary ds-btn-lg">Panduan Pengisian</a>
             </div>
           </div>
         </section>

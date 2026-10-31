@@ -68,6 +68,12 @@ class KuesionerService {
     return this.mockJawaban.find((j) => j.mahasiswa_id === mahasiswaId) || null
   }
 
+  /** Semua jawaban yang tersimpan — dipakai halaman laporan admin. */
+  async getAll(): Promise<JawabanKuesioner[]> {
+    this.load()
+    return [...this.mockJawaban]
+  }
+
   /** Clear all stored answers — useful for testing */
   async clearAll(): Promise<void> {
     this.mockJawaban = []
