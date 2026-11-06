@@ -56,7 +56,24 @@ Di Dashboard Admin ada kartu **Penyimpanan Data** dengan status:
 * **Server terhubung** — semua perubahan otomatis dikirim ke server.
 * **Mode lokal** — server tidak terdeteksi. Data tetap aman di perangkat ini dan bisa dikirim menyusul lewat tombol **Kirim Data Lokal ke Server**.
 
-## 5. Cara Memperbarui Sistem
+## 5. Upload ke Hosting
+
+Hanya perlu dilakukan saat ada pembaruan yang ingin dipasang di server (subdomain `sistems-spk.julyofus.space`).
+
+1. Dari komputer, jalankan `npm run build` lalu buat paket `siap_deploy.zip` (isi folder `dist/`).
+2. Buka **File Manager Hostinger**, masuk ke folder `public_html/sistems-spk`.
+3. Unggah `siap_deploy.zip` ke folder itu, lalu klik **Extract**.
+4. Pada kolom **Choose folder name** saat extract, **isi dengan titik** (`.`) atau pastikan foldernya `public_html/sistems-spk`. Jangan dikosongkan — kalau kosong, berkas akan diekstrak ke folder baru dan aplikasi tidak terbaca.
+5. Pastikan setelah extract ada berkas berikut **sejajar** di folder yang sama:
+   * `index.html`
+   * `api.php`
+   * `.htaccess`
+   * folder `assets/`
+6. Hapus `siap_deploy.zip` (dan `default.php` bila ada) dari server setelah extract.
+7. Folder `data/` **jangan** dibuat manual dan jangan diunggah — PHP membuatnya otomatis dan butuh izin tulis (biasanya sudah `755`).
+8. Buka aplikasinya, login admin, lalu cek kartu **Penyimpanan Data** harus berbunyi **Server terhubung**.
+
+## 6. Cara Memperbarui Sistem
 Ketika ada pembaruan kode, jalankan **berurutan** (jangan hanya `git pull`):
 
 ```cmd
@@ -69,7 +86,7 @@ Lalu hentikan server yang sedang berjalan dengan **Ctrl + C**, dan jalankan ulan
 npm run dev
 ```
 
-## 6. Tips Jika Ada Kendala
+## 7. Tips Jika Ada Kendala
 
 ### `Failed to resolve import "..."` atau `Cannot find module`
 Artinya ada library yang belum terpasang. Solusi:

@@ -78,9 +78,11 @@ Base URL API dapat diarahkan ke host lain lewat `VITE_API_URL`.
 ## Deploy ke Hosting
 
 1. `npm run build`
-2. Unggah **isi** `dist/` ke folder hosting (mis. `public_html/sistems-spk`), termasuk `api.php` dan `.htaccess`.
-3. Pastikan folder dapat menulis (PHP akan membuat `data/`).
-4. Folder `data/` **jangan** diunggah dari komputer — biarkan server membuatnya.
+2. Buat paket dari **isi** `dist/` menjadi `siap_deploy.zip` (berisi `index.html`, `api.php`, `.htaccess`, `assets/`).
+3. Unggah `siap_deploy.zip` ke folder hosting (mis. `public_html/sistems-spk`) lalu **Extract** — pastikan nama folder tujuan diisi, jangan dikosongkan.
+4. Hapus `siap_deploy.zip` dan `default.php` dari server setelah extract.
+5. Pastikan folder dapat menulis (PHP akan membuat `data/`).
+6. Folder `data/` **jangan** diunggah dari komputer — biarkan server membuatnya.
 
 `dist/router.php` hanyalah alat uji lokal dan tidak ikut dibuat oleh build.
 
@@ -96,7 +98,9 @@ Base URL API dapat diarahkan ke host lain lewat `VITE_API_URL`.
 | Uji end-to-end browser (25 skenario) | 25/25 lulus |
 | Uji sinkronisasi multi-perangkat (21 skenario) | 21/21 lulus |
 | Uji mode offline (9 skenario) | 9/9 lulus |
+| Uji pengiriman ulang data lokal (3 skenario) | 3/3 lulus |
 | Uji konkurensi API (12 submit bersamaan) | 12/12 tersimpan |
+| `.htaccess` diuji di Apache 2.4 (deep link, aset, proteksi `data/`) | semua sesuai |
 
 ---
 
