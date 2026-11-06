@@ -19,6 +19,8 @@ import {
 } from '@/services/rekap.service'
 import { exportRekapExcel } from '@/services/rekap-excel'
 import { loadAhp } from '@/services/ahp-store'
+import { refreshFromServer } from '@/services/sync.service'
+import { kuesionerService } from '@/services/kuesioner.service'
 import { CRITERIA_LIST } from '@/types/ahp.types'
 import { ClipboardCheck, ClipboardX, Award, Download, TrendingUp } from 'lucide-react'
 
@@ -34,11 +36,30 @@ export function RekapKuesionerPage() {
   const [pesan, setPesan] = useState<string | null>(null)
   const [cari, setCari] = useState('')
   const [status, setStatus] = useState<FilterStatus>('Semua')
+  const [sumberData, setSumberData] = useState<'server' | 'lokal' | null>(null)
 
-  const muat = useCallback(async () => {
+  /**
+   * Muat rekap.
+   *
+   * Bila `dariServer` true (tombol "Muat Ulang"), data ditarik ulang dari
+   * `api.php` lebih dulu lalu cache lokal diperbarui. Ini yang membuat admin
+   * melihat jawaban mahasiswa dari perangkat lain.
+   */
+  const muat = useCallback(async (dariServer = false) => {
     setLoading(true)
     setError(null)
+    setPesan(null)
     try {
+      if (dariServer) {
+        const ok = await refreshFromServer()
+        setSumberData(ok ? 'server' : 'lokal')
+        kuesionerService.reloadFromStorage()
+        if (!ok) {
+          setError(
+            'Server tidak dapat dihubungi. Data yang tampil berasal dari penyimpanan perangkat ini.'
+          )
+        }
+      }
       setRekap(await buildRekap())
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Gagal memuat rekap kuesioner.')
@@ -154,6 +175,12 @@ export function RekapKuesionerPage() {
         </div>
       )}
 
+      {sumberData === 'server' && !error && (
+        <p className="ds-caption ds-mb-4" role="status">
+          Data dimuat ulang dari server.
+        </p>
+      )}
+
       <div className="ds-card">
         <div className="ds-card-header" style={{ flexWrap: 'wrap' }}>
           <div>
@@ -167,7 +194,7 @@ export function RekapKuesionerPage() {
             <button
               type="button"
               className="ds-btn ds-btn-secondary ds-btn-sm"
-              onClick={() => void muat()}
+              onClick={() => void muat(true)}
               disabled={loading}
             >
               {loading ? 'Memuat...' : 'Muat Ulang'}

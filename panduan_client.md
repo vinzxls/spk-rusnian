@@ -37,11 +37,26 @@ Tunggu beberapa saat sampai muncul link seperti: `http://localhost:5173`. Klik l
   * Username: `admin1`
   * Password: `demo`
 * **Mahasiswa**:
+  * Cukup masukkan **NIM** — tanpa password.
   * NIM: `202106070001` (Budi Santoso)
   * NIM: `202206070001` (Ani Wijaya)
-  * Password: `demo`
 
-## 4. Cara Memperbarui Sistem
+Mahasiswa baru yang ditambahkan admin otomatis bisa login memakai NIM-nya.
+
+## 4. Penyimpanan Data
+
+Data disimpan di **server**, bukan hanya di browser. Artinya:
+
+* Mahasiswa bisa mengisi kuesioner dari HP/laptop mana pun.
+* Admin bisa melihat jawaban terbaru dengan menekan **Muat Ulang** di halaman Rekap Kuesioner.
+* Menghapus cache/riwayat browser **tidak** menghilangkan data, karena data asli ada di server.
+
+Di Dashboard Admin ada kartu **Penyimpanan Data** dengan status:
+
+* **Server terhubung** — semua perubahan otomatis dikirim ke server.
+* **Mode lokal** — server tidak terdeteksi. Data tetap aman di perangkat ini dan bisa dikirim menyusul lewat tombol **Kirim Data Lokal ke Server**.
+
+## 5. Cara Memperbarui Sistem
 Ketika ada pembaruan kode, jalankan **berurutan** (jangan hanya `git pull`):
 
 ```cmd
@@ -54,7 +69,7 @@ Lalu hentikan server yang sedang berjalan dengan **Ctrl + C**, dan jalankan ulan
 npm run dev
 ```
 
-## 5. Tips Jika Ada Kendala
+## 6. Tips Jika Ada Kendala
 
 ### `Failed to resolve import "..."` atau `Cannot find module`
 Artinya ada library yang belum terpasang. Solusi:
@@ -90,12 +105,18 @@ npm run dev -- --port 5174
 Buka browser Anda dan ketik manual: `http://localhost:5173`
 
 ### Halaman tampak kosong atau data hilang
-Data (akun, jawaban kuesioner, bobot AHP) disimpan di penyimpanan browser. Jangan hapus data situs untuk `localhost` bila tidak ingin kehilangan data. Coba juga *hard refresh* dengan **Ctrl + Shift + R**.
+Data asli ada di server. Buka Dashboard Admin lalu tekan **Tarik Data dari Server**. Bila status masih **Mode lokal**, berarti `api.php` belum ada atau folder `data/` tidak bisa ditulis — hubungi pengelola hosting. Coba juga *hard refresh* dengan **Ctrl + Shift + R**.
+
+### Data yang diisi tidak muncul di perangkat lain
+Periksa badge di Dashboard Admin:
+
+* **Server terhubung** → tekan **Muat Ulang** di halaman Rekap Kuesioner.
+* **Mode lokal** → server tidak terhubung. Data tersimpan di perangkat itu saja sampai tombol **Kirim Data Lokal ke Server** berhasil.
 
 ---
 
 ### Catatan
-Untuk penggunaan nyata oleh banyak pengguna sekaligus, data perlu dipindahkan ke basis data server. Versi saat ini menyimpan data di browser sehingga satu perangkat memuat satu kumpulan data.
+Untuk penggunaan nyata oleh banyak mahasiswa, data disimpan terpusat lewat `public/api.php` (file JSON dengan penguncian `flock`). Pastikan `api.php` terunggah di folder yang sama dengan `index.html` dan folder `data/` dapat ditulis oleh PHP.
 
 ---
 

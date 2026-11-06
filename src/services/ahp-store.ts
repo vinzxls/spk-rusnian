@@ -9,6 +9,8 @@
 import type { CriteriaWeight, PairwiseComparison, ScaleSaaty } from '../types/ahp.types'
 import { computeAHP } from '../utils/ahp-calculator'
 import { makeCriteriaWeight } from '../utils/ahp-calculator'
+import { triggerSync } from './sync.service'
+import { pushCollection } from './api.service'
 
 const AHP_KEY = 'rusnian.ahp'
 
@@ -123,16 +125,22 @@ export function saveAhp(comparisons: PairwiseComparison): AhpState {
     }
   }
 
+  // Bagikan bobot ke server agar semua perangkat memakai bobot yang sama.
+  triggerSync('ahp')
+
   return state
 }
 
 export function resetAhp(): void {
-  if (!isBrowser()) return
-  try {
-    localStorage.removeItem(AHP_KEY)
-  } catch {
-    /* abaikan */
+  if (isBrowser()) {
+    try {
+      localStorage.removeItem(AHP_KEY)
+    } catch {
+      /* abaikan */
+    }
   }
+  // Kosongkan juga di server agar perangkat lain tidak masih memakai bobot lama.
+  void pushCollection('ahp', null)
 }
 
 /** Bobot yang dipakai perhitungan: bobot tersimpan, atau bobot setara. */

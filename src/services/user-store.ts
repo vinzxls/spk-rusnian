@@ -10,6 +10,7 @@
  * login dan datanya lenyap setelah reload.
  */
 import type { UserRole } from '../types'
+import { triggerSync } from './sync.service'
 
 const USERS_KEY = 'rusnian.users'
 const MAHASISWA_KEY = 'rusnian.mahasiswa'
@@ -69,6 +70,7 @@ export function getUsers(): StoredUser[] {
 
 export function saveUsers(users: StoredUser[]): void {
   write(USERS_KEY, users)
+  triggerSync('users')
 }
 
 export function getMahasiswa(): StoredMahasiswa[] {
@@ -77,6 +79,7 @@ export function getMahasiswa(): StoredMahasiswa[] {
 
 export function saveMahasiswa(daftar: StoredMahasiswa[]): void {
   write(MAHASISWA_KEY, daftar)
+  triggerSync('mahasiswa')
 }
 
 /**

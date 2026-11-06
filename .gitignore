@@ -7,6 +7,10 @@ dist/
 build/
 *.tsbuildinfo
 
+# Paket upload ke hosting (dibuat dari dist/)
+siap_deploy.zip
+siap_deploy/
+
 # Environment & local config
 .env
 .env.local

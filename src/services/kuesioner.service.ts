@@ -1,3 +1,14 @@
+/**
+ * Penyimpanan jawaban kuesioner.
+ *
+ * Lokal (localStorage) dipakai sebagai cache supaya UI tetap responsif dan
+ * aplikasi masih jalan tanpa server. Setiap submit juga dikirim ke server lewat
+ * endpoint atomik `submit-kuesioner`, sehingga:
+ *   - data tidak hilang saat mahasiswa berganti perangkat;
+ *   - dua mahasiswa yang submit bersamaan tidak saling menimpa.
+ */
+import { syncKuesionerEntry } from './sync.service'
+
 const STORAGE_KEY = 'rusnian.kuesioner'
 
 export interface JawabanKuesioner {
@@ -17,12 +28,18 @@ class KuesionerService {
 
   private load(): void {
     if (this.initialized) return
+    this.reloadFromStorage()
+  }
+
+  /** Baca ulang dari localStorage — dipakai setelah data server di-hydrate. */
+  reloadFromStorage(): void {
+    this.mockJawaban = []
     if (this.isBrowser()) {
       try {
         const raw = localStorage.getItem(STORAGE_KEY)
         if (raw) this.mockJawaban = JSON.parse(raw) as JawabanKuesioner[]
       } catch {
-        // corrupt storage — start clean
+        // storage rusak — mulai bersih
         this.mockJawaban = []
       }
     }
@@ -34,7 +51,7 @@ class KuesionerService {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(this.mockJawaban))
     } catch {
-      /* quota full — give up silently */
+      /* kuota penuh — abaikan */
     }
   }
 
@@ -60,6 +77,11 @@ class KuesionerService {
     }
 
     this.save()
+
+    // Kirim ke server tanpa memblokir UI. Bila offline, jawaban tetap ada di
+    // perangkat ini dan akan terbawa saat tombol "Sinkronkan" ditekan admin.
+    await syncKuesionerEntry(entry)
+
     return true
   }
 
@@ -74,7 +96,7 @@ class KuesionerService {
     return [...this.mockJawaban]
   }
 
-  /** Clear all stored answers — useful for testing */
+  /** Hapus semua jawaban lokal. */
   async clearAll(): Promise<void> {
     this.mockJawaban = []
     this.save()
@@ -82,3 +104,4 @@ class KuesionerService {
 }
 
 export const kuesionerService = new KuesionerService()
+export default kuesionerService

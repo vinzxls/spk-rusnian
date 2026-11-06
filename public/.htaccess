@@ -1,0 +1,27 @@
+# Konfigurasi Apache untuk aplikasi SPA (React Router).
+#
+# Sengaja TIDAK memakai RewriteBase absolut supaya berkas ini tetap benar walau
+# diunggah ke subfolder (mis. public_html/sistems-spk) maupun ke domain utama.
+#
+# Catatan: index.html memuat aset dengan path absolut (/assets/...). Karena itu
+# folder tempat berkas ini berada harus menjadi document root situs/subdomain.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # Berkas/folder yang benar-benar ada (assets, api.php, gambar) dilayani apa adanya.
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # Selain itu arahkan ke index.html agar rute React tetap bekerja saat refresh.
+  RewriteRule . index.html [L]
+</IfModule>
+
+# Jangan tampilkan daftar isi folder (dibungkus agar aman bila Options dilarang).
+<IfModule mod_autoindex.c>
+  Options -Indexes
+</IfModule>
+
+<IfModule mod_headers.c>
+  Header set X-Content-Type-Options "nosniff"
+</IfModule>

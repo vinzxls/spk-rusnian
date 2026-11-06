@@ -9,6 +9,8 @@
  * Di produksi, modul ini yang diganti pemanggilan API backend.
  */
 import { CRITERIA_LIST } from '../types/ahp.types'
+import { triggerSync } from './sync.service'
+import { pushCollection } from './api.service'
 
 const KRITERIA_KEY = 'rusnian.kriteria'
 const SUBKRITERIA_KEY = 'rusnian.subkriteria'
@@ -77,6 +79,7 @@ export function loadKriteria(): KriteriaItem[] {
 
 export function saveKriteria(items: KriteriaItem[]): void {
   write(KRITERIA_KEY, clampKriteria(items))
+  triggerSync('kriteria')
 }
 
 export function resetKriteria(): KriteriaItem[] {
@@ -87,6 +90,7 @@ export function resetKriteria(): KriteriaItem[] {
       /* abaikan */
     }
   }
+  void pushCollection('kriteria', null)
   return clone(DEFAULT_KRITERIA)
 }
 
@@ -98,6 +102,7 @@ export function loadSubkriteria(): SubkriteriaItem[] {
 
 export function saveSubkriteria(items: SubkriteriaItem[]): void {
   write(SUBKRITERIA_KEY, clampSubkriteria(items))
+  triggerSync('subkriteria')
 }
 
 export function resetSubkriteria(): SubkriteriaItem[] {
@@ -108,6 +113,7 @@ export function resetSubkriteria(): SubkriteriaItem[] {
       /* abaikan */
     }
   }
+  void pushCollection('subkriteria', null)
   return clone(DEFAULT_SUBKRITERIA)
 }
 

@@ -21,6 +21,8 @@ import {
   type ReactNode,
 } from 'react';
 import * as authService from '../services/auth.service';
+import { hydrateFromServer } from '../services/sync.service';
+import { kuesionerService } from '../services/kuesioner.service';
 import type { AuthSession, LoginCredentials, User, UserRole } from '../types';
 
 export interface UseAuthState {
@@ -52,9 +54,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   /** Bootstrap: siapkan data demo lalu pulihkan sesi dari sessionStorage. */
   useEffect(() => {
-    authService.initMockData();
-    setSession(authService.getCurrentSession() ?? null);
-    setIsLoading(false);
+    let batal = false
+
+    const boot = async () => {
+      // Tarik data dari server lebih dulu agar mahasiswa di perangkat lain
+      // melihat data yang sama. Bila server belum ada, lanjut dengan data lokal.
+      await hydrateFromServer()
+      if (batal) return
+
+      // Cache jawaban sudah basi setelah data server masuk — baca ulang.
+      kuesionerService.reloadFromStorage()
+
+      authService.initMockData()
+      setSession(authService.getCurrentSession() ?? null)
+      setIsLoading(false)
+    }
+
+    void boot()
+
+    return () => {
+      batal = true
+    }
   }, []);
 
   const checkSession = useCallback(() => {

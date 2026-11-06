@@ -14,7 +14,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
     setError(null)
     try {
       const ok = await onLogin(credentials)
-      if (!ok) setError('Username / NIM atau password salah.')
+      if (!ok) setError('Identitas atau password tidak valid.')
       return ok as boolean
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Login gagal. Coba lagi.')
@@ -73,7 +73,7 @@ export function LoginPage({ onLogin }: LoginPageProps) {
         <div className="ds-card-content">
           <LoginForm onLogin={handleLogin} isLoading={isLoading} error={error} />
           <p className="ds-caption" style={{ marginTop: 14, textAlign: 'center' }}>
-            Demo Admin: admin1 / demo • Mahasiswa: 202106070001 / demo
+            Mahasiswa: masukkan NIM saja. Admin: admin1 dengan password demo.
           </p>
         </div>
       </div>

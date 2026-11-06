@@ -29,8 +29,8 @@ export function DashboardMahasiswa() {
         </div>
         <div className="ds-card-content">
           <p className="ds-body-sm" style={{ marginBottom: 12 }}>
-            Silakan isi kuesioner berdasarkan 5 kriteria: Durasi, Frekuensi, Ketergantungan,
-            Gangguan Akademik, dan FoMO. Setiap kriteria memiliki 5 subkriteria (skala 1–5).
+            Kuesioner terdiri dari 25 pernyataan. Pilih jawaban yang paling menggambarkan kondisi
+            Anda saat ini. Tidak ada jawaban benar atau salah.
           </p>
           {hasFilled ? (
             <button className="ds-btn ds-btn-secondary" disabled>

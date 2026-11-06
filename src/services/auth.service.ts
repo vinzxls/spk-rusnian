@@ -63,8 +63,8 @@ export async function login(credentials: LoginCredentials): Promise<LoginRespons
   const identifier = normalizeIdentifier(credentials.username);
   const { password } = credentials;
 
-  if (!identifier || !password) {
-    return { success: false, error: { code: 'INVALID_CREDENTIALS', message: 'Username / NIM dan password wajib diisi' } };
+  if (!identifier) {
+    return { success: false, error: { code: 'INVALID_CREDENTIALS', message: 'NIM atau username wajib diisi' } };
   }
 
   let user: User | undefined;
@@ -73,10 +73,14 @@ export async function login(credentials: LoginCredentials): Promise<LoginRespons
   if (isNim(identifier)) {
     mahasiswa = lookupMahasiswaByNim(identifier);
     if (!mahasiswa) {
-      return { success: false, error: { code: 'USER_NOT_FOUND', message: 'Mahasiswa tidak ditemukan' } };
+      return { success: false, error: { code: 'USER_NOT_FOUND', message: 'NIM tidak terdaftar. Hubungi admin.' } };
     }
     user = lookupUserById(mahasiswa.user_id);
   } else {
+    // Admin (dan akun non-NIM) tetap wajib password.
+    if (!password) {
+      return { success: false, error: { code: 'INVALID_CREDENTIALS', message: 'Password wajib diisi' } };
+    }
     user = lookupUserByUsername(identifier);
     if (user?.role === 'mahasiswa') {
       mahasiswa = lookupMahasiswaByUserId(user.id);
@@ -87,8 +91,12 @@ export async function login(credentials: LoginCredentials): Promise<LoginRespons
     return { success: false, error: { code: 'USER_NOT_FOUND', message: 'User tidak ditemukan' } };
   }
 
-  if (!verifyPasswordConcept(password, user.password_hash)) {
-    return { success: false, error: { code: 'INVALID_CREDENTIALS', message: 'Password salah' } };
+  // Mahasiswa login hanya dengan NIM: NIM sudah unik per mahasiswa dan
+  // dikelola admin, sehingga tidak perlu password. Admin tetap diverifikasi.
+  if (user.role !== 'mahasiswa') {
+    if (!verifyPasswordConcept(password, user.password_hash)) {
+      return { success: false, error: { code: 'INVALID_CREDENTIALS', message: 'Password salah' } };
+    }
   }
 
   activeSession = {

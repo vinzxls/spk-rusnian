@@ -33,6 +33,11 @@ function NavIcon({ name, size = 18 }: { name: NavIconName; size?: number }) {
   );
 }
 
+const ROLE_LABEL: Record<UserRole, string> = {
+  admin: 'Administrator',
+  mahasiswa: 'Mahasiswa',
+};
+
 export interface NavbarProps {
   title?: string;
   subtitle?: string;
@@ -86,7 +91,7 @@ export default function Navbar({
               </span>
               <span style={{ textAlign: 'right' }}>
                 <span className="ds-navbar-user-name">{user.name}</span>
-                <span className="ds-navbar-user-role">{user.role}</span>
+                <span className="ds-navbar-user-role">{ROLE_LABEL[user.role] ?? user.role}</span>
               </span>
               <NavIcon name="chevron-down" />
             </button>

@@ -1059,6 +1059,7 @@ a:hover {
 .ds-navbar-user:hover { background-color: var(--ds-gray-100); }
 
 .ds-navbar-user-name {
+  display: block;
   font-size: var(--ds-font-size-sm);
   font-weight: 500;
   color: var(--foreground);
@@ -1066,6 +1067,7 @@ a:hover {
   line-height: 1.3;
 }
 .ds-navbar-user-role {
+  display: block;
   font-size: var(--ds-font-size-xs);
   color: var(--muted-foreground);
   text-align: right;
@@ -1338,4 +1340,130 @@ a:hover {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+/* ==========================================================================
+   KUESIONER: kartu pertanyaan, skala Likert, progress
+   ========================================================================== */
+
+.ds-progress {
+  width: 100%;
+  height: 8px;
+  background-color: var(--color-wash);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.ds-progress-bar {
+  height: 100%;
+  background-color: var(--color-accent);
+  border-radius: 999px;
+  transition: width 0.25s ease;
+}
+
+/* ---------------------------------------------------------------- pertanyaan */
+.ds-pertanyaan {
+  margin: 0;
+  padding: 20px 22px;
+  border: 1px solid var(--color-rule);
+  min-width: 0;
+}
+
+.ds-pertanyaan-legend {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 0;
+  margin-bottom: 16px;
+  font-size: 0.95rem;
+  line-height: 1.55;
+  color: var(--color-ink);
+  font-weight: 500;
+}
+
+.ds-pertanyaan-nomor {
+  flex: 0 0 auto;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background-color: var(--color-accent);
+  color: var(--color-accent-ink);
+  font-size: 0.78rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.ds-pilihan {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.ds-pilihan-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 8px;
+  border: 1px solid var(--color-rule);
+  border-radius: 8px;
+  background-color: var(--color-paper);
+  font-size: 0.82rem;
+  line-height: 1.35;
+  text-align: center;
+  color: var(--color-ink-2);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+}
+
+.ds-pilihan-item:hover {
+  border-color: var(--color-accent);
+  color: var(--color-ink);
+}
+
+.ds-pilihan-item.is-selected {
+  border-color: var(--color-accent);
+  background-color: var(--color-accent);
+  color: var(--color-accent-ink);
+  font-weight: 600;
+}
+
+.ds-pilihan-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.ds-pilihan-item:focus-within {
+  outline: 2px solid var(--color-focus-ring);
+  outline-offset: 2px;
+}
+
+.ds-sticky-aksi {
+  position: sticky;
+  bottom: 16px;
+  z-index: 5;
+  box-shadow: 0 -4px 14px rgba(26, 26, 26, 0.08);
+}
+
+@media (max-width: 720px) {
+  .ds-pertanyaan {
+    padding: 16px;
+  }
+
+  .ds-pilihan {
+    grid-template-columns: 1fr;
+  }
+
+  .ds-pilihan-item {
+    justify-content: flex-start;
+    text-align: left;
+    padding: 11px 14px;
+  }
 }

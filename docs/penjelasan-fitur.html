@@ -667,7 +667,7 @@
   </div>
   <div class="flow-step">
     <div class="n">3</div>
-    <div class="txt"><strong>Mahasiswa mengisi kuesioner</strong><br><span>25 pertanyaan, skala 1–5</span></div>
+    <div class="txt"><strong>Mahasiswa mengisi kuesioner</strong><br><span>Login cukup dengan NIM, lalu jawab 25 pertanyaan dengan pilihan teks (Sangat Tidak Setuju s/d Sangat Setuju)</span></div>
   </div>
   <div class="flow-step">
     <div class="n">4</div>
@@ -701,13 +701,13 @@
   </thead>
   <tbody>
     <tr>
-      <td><strong>Data tersimpan di browser</strong></td>
+      <td><strong>Data tersimpan di server</strong></td>
       <td>
-        Untuk tahap prototipe, data (akun, jawaban kuesioner, dan bobot AHP)
-        disimpan pada penyimpanan browser di perangkat yang dipakai. Artinya
-        satu perangkat memuat satu kumpulan data, dan menghapus data browser
-        akan menghapus datanya. Untuk penggunaan nyata lintas perangkat
-        diperlukan basis data pada server.
+        Data (akun, jawaban kuesioner, dan bobot AHP) disimpan terpusat pada
+        server melalui <code>api.php</code>, sehingga dapat diakses dari
+        perangkat mana pun dan tidak hilang saat data browser dibersihkan.
+        Browser hanya menyimpan salinan sementara agar aplikasi tetap responsif
+        dan masih bisa dipakai bila koneksi terputus.
       </td>
     </tr>
     <tr>
@@ -755,6 +755,22 @@
     <tr>
       <td>Pengujian fitur baru (kuesioner, AHP, rekap, Excel, laporan)</td>
       <td><strong>19 dari 19 skenario lulus</strong>, tanpa error saat aplikasi berjalan</td>
+    </tr>
+    <tr>
+      <td>Pengujian penyimpanan server &amp; login NIM (satu perangkat)</td>
+      <td><strong>25 dari 25 skenario lulus</strong></td>
+    </tr>
+    <tr>
+      <td>Pengujian sinkronisasi antar perangkat (tambah mahasiswa, bobot AHP, jawaban)</td>
+      <td><strong>21 dari 21 skenario lulus</strong></td>
+    </tr>
+    <tr>
+      <td>Pengujian aplikasi tanpa server (mode lokal)</td>
+      <td><strong>9 dari 9 skenario lulus</strong></td>
+    </tr>
+    <tr>
+      <td>Pengujian pengiriman kuesioner bersamaan</td>
+      <td><strong>12 dari 12 jawaban tersimpan</strong>, tidak ada data hilang</td>
     </tr>
     <tr>
       <td>Pengujian regresi alur utama (login, dashboard, laporan)</td>
@@ -824,8 +840,9 @@
 
 <ul>
   <li>
-    <strong>Migrasi data ke server</strong> agar dapat diakses dari banyak
-    perangkat sekaligus dan data tidak bergantung pada satu browser
+    <strong>Penyimpanan data terpusat</strong> — data kini disimpan di server
+    lewat <code>api.php</code>, sehingga mahasiswa dapat mengisi dari perangkat
+    mana pun dan admin melihat data terbaru tanpa bergantung pada satu browser
   </li>
   <li>
     <strong>Penyesuaian ambang kategori</strong> bila pembimbing menetapkan
@@ -834,6 +851,10 @@
   <li>
     <strong>Penambahan jumlah responden</strong> agar nilai Q dan perangkingan
     menjadi lebih stabil dan bermakna
+  </li>
+  <li>
+    <strong>Login mahasiswa cukup dengan NIM</strong> — tanpa password, karena
+    NIM sudah unik dan dikelola admin
   </li>
 </ul>
 
